@@ -11,8 +11,8 @@ logCostArray = zeros(maxIters,1);
 [logCost2,grad2] = MRFEval(x,g);
 [logCost1,grad1] = GetLikelihoodTerm(x,y);
 
-logCost = alpha*logCost1+(1-alpha)*logCost2;
-grad = alpha*grad1+(1-alpha)*grad2;
+logCost = (1-alpha)*logCost1+(alpha)*logCost2;
+grad = (1-alpha)*grad1+(alpha)*grad2;
 logCostArray(1)=logCost;
 
 iter=1;
@@ -26,8 +26,8 @@ while(1)
     [newLogCost2,newGrad2] = MRFEval(xNew,g);
     [newLogCost1,newGrad1] = GetLikelihoodTerm(xNew,y);
     
-    newLogCost = alpha*newLogCost1+(1-alpha)*newLogCost2;
-    newGrad = alpha*newGrad1+(1-alpha)*newGrad2;
+    newLogCost = (1-alpha)*newLogCost1+alpha*newLogCost2;
+    newGrad = (1-alpha)*newGrad1+alpha*newGrad2;
     
     if newLogCost<logCost
         x = xNew;

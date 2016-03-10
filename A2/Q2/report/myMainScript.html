@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>myMainScript</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-03-08"><meta name="DC.source" content="myMainScript.m"><style type="text/css">
+      --><title>myMainScript</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-03-10"><meta name="DC.source" content="myMainScript.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -71,22 +71,24 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><h2>A) RRSME of given noisy image<a name="3"></a></h2><pre class="codeinput">noiselessNorm = sqrt(sumsqr(abs(imageNoiseless)));
 initialRRMSE = sqrt(sumsqr(abs(imageNoiseless)-abs(imageNoisy)))/noiselessNorm;
 </pre><h2>B) 1: Using quadratic function prior<a name="4"></a></h2><pre class="codeinput">g = @(x) QuadraticFunction(x);
-alphaRange1 = [0:0.05:0.75 0.76:0.02:0.84 0.85:0.05:1];
-rrmse1 = zeros(length(alphaRange1),1);
-
-<span class="keyword">for</span> i=1:length(alphaRange1)
-    alpha = alphaRange1(i);
-
-    [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha);
-    rrmse1(i) = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
-<span class="comment">%     figure(1);</span>
-<span class="comment">%     plot(logCostArray(1:iters));</span>
-<span class="comment">%     title('Log cost function');</span>
-<span class="keyword">end</span>
+<span class="comment">% alphaRange1 = 1-[0:0.05:0.75 0.76:0.02:0.84 0.85:0.05:1];</span>
+<span class="comment">% rrmse1 = zeros(length(alphaRange1),1);</span>
+<span class="comment">%</span>
+<span class="comment">% for i=1:length(alphaRange1)</span>
+<span class="comment">%     alpha = alphaRange1(i);</span>
+<span class="comment">%</span>
+<span class="comment">%     [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha);</span>
+<span class="comment">%     rrmse1(i) = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;</span>
+<span class="comment">% %     figure(1);</span>
+<span class="comment">% %     plot(logCostArray(1:iters));</span>
+<span class="comment">% %     title('Log cost function');</span>
+<span class="comment">% end</span>
 
 <span class="comment">% **Getting the optimum params**</span>
-[minVal1,index] = min(rrmse1);
-alpha1 = alphaRange1(index);
+<span class="comment">% [minVal1,index] = min(rrmse1);</span>
+<span class="comment">% alpha1 = alphaRange1(index);</span>
+
+alpha1 = 0.22; <span class="comment">% obtained by optimizing using the commented code above</span>
 
 <span class="comment">% **Evaluating at neighbours**</span>
 [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha1*0.8);
@@ -94,33 +96,37 @@ neighborVal1_1 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha1*1.2);
 neighborVal1_2 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
+<span class="comment">%</span>
+<span class="comment">% figure(1);</span>
+<span class="comment">% plot(alphaRange1,rrmse1);</span>
+<span class="comment">% title('RRMSE vs alpha plot for quadratic prior');</span>
+</pre><h2>B) 2: Using huber function prior<a name="5"></a></h2><pre class="codeinput"><span class="comment">% alphaRange2 = 0.5:0.02:0.7;</span>
+<span class="comment">% lambdaRange2 = 0.12:0.01:0.22;</span>
+<span class="comment">%</span>
+<span class="comment">% rrmse2 = zeros(length(alphaRange2),length(lambdaRange2));</span>
+<span class="comment">%</span>
+<span class="comment">% for i=1:length(alphaRange2)</span>
+<span class="comment">%     for j=1:length(lambdaRange2)</span>
+<span class="comment">%         g = @(x) HuberFunction(x,lambdaRange2(j));</span>
+<span class="comment">%         alpha = alphaRange2(i);</span>
+<span class="comment">%</span>
+<span class="comment">%         [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha);</span>
+<span class="comment">%         rrmse2(i,j) = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;</span>
+<span class="comment">%     %     figure(1);</span>
+<span class="comment">%     %     plot(logCostArray(1:iters));</span>
+<span class="comment">%     %     title('Log cost function');</span>
+<span class="comment">%     end</span>
+<span class="comment">% end</span>
+<span class="comment">%</span>
+<span class="comment">% % **Getting the optimum params**</span>
+<span class="comment">% [minVal2,index] = min(min(rrmse2));</span>
+<span class="comment">% lambda2 = lambdaRange2(index);</span>
+<span class="comment">% [~,index] = min(rrmse2(:,index));</span>
+<span class="comment">% alpha2 = alphaRange2(index);</span>
 
-figure(1);
-plot(alphaRange1,rrmse1);
-title(<span class="string">'RRMSE vs alpha plot for quadratic prior'</span>);
-</pre><img vspace="5" hspace="5" src="myMainScript_01.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_02.png" alt=""> <h2>B) 2: Using huber function prior<a name="5"></a></h2><pre class="codeinput">alphaRange2 = [0:0.05:0.25 0.26:0.02:0.48 0.5:0.08:1];
-lambdaRange2 = [0:0.05:0.1 0.11:0.02:0.34 0.35:0.05:0.6];
+lambda2 = 0.13;
+alpha2 = 0.6;  <span class="comment">% obtained by optimizing using the commented code above</span>
 
-rrmse2 = zeros(length(alphaRange2),length(lambdaRange2));
-
-<span class="keyword">for</span> i=1:length(alphaRange2)
-    <span class="keyword">for</span> j=1:length(lambdaRange2)
-        g = @(x) HuberFunction(x,lambdaRange2(j));
-        alpha = alphaRange2(i);
-
-        [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha);
-        rrmse2(i,j) = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
-    <span class="comment">%     figure(1);</span>
-    <span class="comment">%     plot(logCostArray(1:iters));</span>
-    <span class="comment">%     title('Log cost function');</span>
-    <span class="keyword">end</span>
-<span class="keyword">end</span>
-
-<span class="comment">% **Getting the optimum params**</span>
-[val2,index] = min(min(rrmse2));
-lambda2 = lambdaRange2(index);
-[~,index] = min(rrmse2(:,index));
-alpha2 = alphaRange2(index);
 
 <span class="comment">% **Evaluating at neighbours**</span>
 g = @(x) HuberFunction(x,lambda2);
@@ -144,33 +150,36 @@ neighborVal2_4 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 
 <span class="comment">% **Plotting RRMSE for huber prior**</span>
-figure(2);
-surf(lambdaRange2,alphaRange2,rrmse2);
-title(<span class="string">'RRMSE plot for huber prior'</span>);
-xlabel(<span class="string">'lambda'</span>);
-ylabel(<span class="string">'alpha'</span>);
-</pre><img vspace="5" hspace="5" src="myMainScript_03.png" alt=""> <h2>B) 2: Using g3()<a name="6"></a></h2><pre class="codeinput">alphaRange3 = [0:0.02:0.49 0.5:0.05:0.7];
-lambdaRange3 = [0:0.01:0.19 0.2:0.05:0.5] ;
+<span class="comment">% figure(2);</span>
+<span class="comment">% surf(lambdaRange2,alphaRange2,rrmse2);</span>
+<span class="comment">% title('RRMSE plot for huber prior');</span>
+<span class="comment">% xlabel('lambda');</span>
+<span class="comment">% ylabel('alpha');</span>
+</pre><h2>B) 2: Using g3()<a name="6"></a></h2><pre class="codeinput"><span class="comment">% alphaRange3 = [0.92:0.01:1];</span>
+<span class="comment">% lambdaRange3 = [0.0:0.005:0.02];</span>
+<span class="comment">%</span>
+<span class="comment">% rrmse3 = zeros(length(alphaRange3),length(lambdaRange3));</span>
+<span class="comment">%</span>
+<span class="comment">% for i=1:length(alphaRange3)</span>
+<span class="comment">%     for j=1:length(lambdaRange3)</span>
+<span class="comment">%         g = @(x) G3Function(x,lambdaRange3(j));</span>
+<span class="comment">%         alpha = alphaRange3(i);</span>
+<span class="comment">%</span>
+<span class="comment">%         [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha);</span>
+<span class="comment">%         rrmse3(i,j) = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;</span>
+<span class="comment">%     %     figure(1);</span>
+<span class="comment">%     %     plot(logCostArray(1:iters));</span>
+<span class="comment">%     %     title('Log cost function');</span>
+<span class="comment">%     end</span>
+<span class="comment">% end</span>
+<span class="comment">%</span>
+<span class="comment">% [val3,index] = min(min(rrmse3));</span>
+<span class="comment">% lambda3 = lambdaRange3(index);</span>
+<span class="comment">% [~,index] = min(rrmse3(:,index));</span>
+<span class="comment">% alpha3 = alphaRange3(index);</span>
 
-rrmse3 = zeros(length(alphaRange3),length(lambdaRange3));
-
-<span class="keyword">for</span> i=1:length(alphaRange3)
-    <span class="keyword">for</span> j=1:length(lambdaRange3)
-        g = @(x) G3Function(x,lambdaRange3(j));
-        alpha = alphaRange3(i);
-
-        [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha);
-        rrmse3(i,j) = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
-    <span class="comment">%     figure(1);</span>
-    <span class="comment">%     plot(logCostArray(1:iters));</span>
-    <span class="comment">%     title('Log cost function');</span>
-    <span class="keyword">end</span>
-<span class="keyword">end</span>
-
-[val3,index] = min(min(rrmse3));
-lambda3 = lambdaRange3(index);
-[~,index] = min(rrmse3(:,index));
-alpha3 = alphaRange3(index);
+lambda3 = 0.005;
+alpha3 = 0.97; <span class="comment">% obtained by optimizing using the commented code above</span>
 
 <span class="comment">% **Evaluating at neighbours**</span>
 g = @(x) HuberFunction(x,lambda3);
@@ -193,12 +202,47 @@ g = @(x) HuberFunction(x,1.2*lambda3);
 neighborVal3_4 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 <span class="comment">% **Plotting**</span>
-figure(3);
-surf(lambdaRange3,alphaRange3,rrmse3);
-title(<span class="string">'RRMSE plot for g3 prior'</span>);
-xlabel(<span class="string">'lambda'</span>);
-ylabel(<span class="string">'alpha'</span>);
+<span class="comment">% figure(3);</span>
+<span class="comment">% surf(lambdaRange3,alphaRange3,rrmse3);</span>
+<span class="comment">% title('RRMSE plot for g3 prior');</span>
+<span class="comment">% xlabel('lambda');</span>
+<span class="comment">% ylabel('alpha');</span>
+</pre><h2>C,D) Best results for each MRF potential function<a name="7"></a></h2><pre class="codeinput">noisyImg = abs(imageNoisy);
 
+<span class="comment">% **Quadratic function g1**</span>
+g = @(x) QuadraticFunction(x);
+[x,logCostArray,iters] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha1);
+
+denoised_g1 = abs(x);
+logCost_g1 = logCostArray(1:iters);
+
+minVal1 = sqrt(sumsqr(denoised_g1-imageNoiseless))/noiselessNorm;
+
+<span class="comment">% **Huber function g2**</span>
+g = @(x) HuberFunction(x,lambda2);
+[x,logCostArray,iters] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha2);
+
+denoised_g2 = abs(x);
+logCost_g2 = logCostArray(1:iters);
+
+minVal2 = sqrt(sumsqr(denoised_g2-imageNoiseless))/noiselessNorm;
+
+<span class="comment">% **Huber function g3**</span>
+g = @(x) G3Function(x,lambda3);
+[x,logCostArray,iters] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha3);
+
+denoised_g3 = abs(x);
+logCost_g3 = logCostArray(1:iters);
+
+minVal3 = sqrt(sumsqr(denoised_g3-imageNoiseless))/noiselessNorm;
+
+
+<span class="comment">% Finding the minimum and maximum value of the images for creating a colormap</span>
+jointImage = [abs(imageNoiseless(:)); noisyImg(:); denoised_g1(:); <span class="keyword">...</span>
+    denoised_g2(:); denoised_g3(:)];
+
+minIntensity = min(jointImage);
+maxIntensity = max(jointImage);
 
 <span class="comment">% #Printing#</span>
 fprintf(<span class="string">'\n'</span>);
@@ -211,7 +255,7 @@ fprintf(<span class="string">'\n'</span>);
 
 
 disp(<span class="string">'*Part 2) Huber function g2*'</span>);
-disp(strcat(<span class="string">'Min RRMSE = '</span>,num2str(val2),<span class="string">'; obtained at alpha* = '</span>,<span class="keyword">...</span>
+disp(strcat(<span class="string">'Min RRMSE = '</span>,num2str(minVal2),<span class="string">'; obtained at alpha* = '</span>,<span class="keyword">...</span>
     num2str(alpha2),<span class="string">' and lambda* ='</span>,num2str(lambda2)));
 disp(strcat(<span class="string">'RRMSE at (0.8alpha*,lambda*) = '</span>,num2str(neighborVal2_1)));
 disp(strcat(<span class="string">'RRMSE at (1.2alpha*,lambda*) = '</span>,num2str(neighborVal2_2)));
@@ -221,63 +265,15 @@ fprintf(<span class="string">'\n'</span>);
 
 
 disp(<span class="string">'*Part 3) function g3*'</span>);
-disp(strcat(<span class="string">'Min RRMSE = '</span>,num2str(val3),<span class="string">'; obtained at alpha* = '</span>,<span class="keyword">...</span>
+disp(strcat(<span class="string">'Min RRMSE = '</span>,num2str(minVal3),<span class="string">'; obtained at alpha* = '</span>,<span class="keyword">...</span>
     num2str(alpha3),<span class="string">' and lambda* ='</span>,num2str(lambda3)));
 disp(strcat(<span class="string">'RRMSE at (0.8alpha*,lambda*) = '</span>,num2str(neighborVal3_1)));
 disp(strcat(<span class="string">'RRMSE at (1.2alpha*,lambda*) = '</span>,num2str(neighborVal3_2)));
 disp(strcat(<span class="string">'RRMSE at (alpha*,0.8lambda*) = '</span>,num2str(neighborVal3_3)));
 disp(strcat(<span class="string">'RRMSE at (alpha*,1.2lambda*) = '</span>,num2str(neighborVal3_4)));
 fprintf(<span class="string">'\n'</span>);
-</pre><pre class="codeoutput">
-*Part 1) Quadratic funnction g1*
-Min RRMSE =0.21008; obtained at alpha* =0.78
-RRMSE at (0.8alpha*) =0.22795
-RRMSE at (1.2alpha*) =0.24491
-
-*Part 2) Huber function g2*
-Min RRMSE =0.13226; obtained at alpha* =0.4 and lambda* =0.13
-RRMSE at (0.8alpha*,lambda*) =0.1383
-RRMSE at (1.2alpha*,lambda*) =0.29858
-RRMSE at (alpha*,0.8lambda*) =0.29857
-RRMSE at (alpha*,1.2lambda*) =0.14138
-
-*Part 3) function g3*
-Min RRMSE =0.077294; obtained at alpha* =0.06 and lambda* =0.01
-RRMSE at (0.8alpha*,lambda*) =0.2132
-RRMSE at (1.2alpha*,lambda*) =0.21682
-RRMSE at (alpha*,0.8lambda*) =0.20832
-RRMSE at (alpha*,1.2lambda*) =0.22504
-
-</pre><img vspace="5" hspace="5" src="myMainScript_04.png" alt=""> <h2>C,D) Best results for each MRF potential function<a name="7"></a></h2><pre class="codeinput">noisyImg = abs(imageNoisy);
-
-<span class="comment">% **Quadratic function g1**</span>
-g = @(x) QuadraticFunction(x);
-[x,logCostArray,iters] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha1);
-
-denoised_g1 = abs(x);
-logCost_g1 = logCostArray(1:iters);
-
-<span class="comment">% **Huber function g2**</span>
-g = @(x) HuberFunction(x,lambda2);
-[x,logCostArray,iters] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha2);
-
-denoised_g2 = abs(x);
-logCost_g2 = logCostArray(1:iters);
-
-<span class="comment">% **Huber function g3**</span>
-g = @(x) G3Function(x,lambda3);
-[x,logCostArray,iters] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha3);
-
-denoised_g3 = abs(x);
-logCost_g3 = logCostArray(1:iters);
 
 
-<span class="comment">% Finding the minimum and maximum value of the images for creating a colormap</span>
-jointImage = [abs(imageNoiseless(:)); noisyImg(:); denoised_g1(:); <span class="keyword">...</span>
-    denoised_g2(:); denoised_g3(:)];
-
-minIntensity = min(jointImage);
-maxIntensity = max(jointImage);
 
 <span class="comment">% Scaling every image so that [min,max] maps to [0,1]</span>
 imageNoiseless = (abs(imageNoiseless)-minIntensity)./(maxIntensity-minIntensity);
@@ -328,7 +324,27 @@ title(<span class="string">'log cost for g2'</span>);
 figure(11);
 plot(logCost_g3);
 title(<span class="string">'log cost for g3'</span>);
-</pre><img vspace="5" hspace="5" src="myMainScript_05.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_06.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_07.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_08.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_09.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_10.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_11.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_12.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
+</pre><pre class="codeoutput">
+*Part 1) Quadratic funnction g1*
+Min RRMSE =0.21008; obtained at alpha* =0.22
+RRMSE at (0.8alpha*) =0.21191
+RRMSE at (1.2alpha*) =0.212
+
+*Part 2) Huber function g2*
+Min RRMSE =0.13226; obtained at alpha* =0.6 and lambda* =0.13
+RRMSE at (0.8alpha*,lambda*) =0.29858
+RRMSE at (1.2alpha*,lambda*) =0.14708
+RRMSE at (alpha*,0.8lambda*) =0.29857
+RRMSE at (alpha*,1.2lambda*) =0.14138
+
+*Part 3) function g3*
+Min RRMSE =0.068109; obtained at alpha* =0.97 and lambda* =0.005
+RRMSE at (0.8alpha*,lambda*) =0.23851
+RRMSE at (1.2alpha*,lambda*) =2.045827388633466e+87
+RRMSE at (alpha*,0.8lambda*) =0.18688
+RRMSE at (alpha*,1.2lambda*) =0.19192
+
+</pre><img vspace="5" hspace="5" src="myMainScript_01.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_02.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_03.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_04.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_05.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_06.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_07.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_08.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 % Denoising a phantom MRI image
 
@@ -343,22 +359,24 @@ initialRRMSE = sqrt(sumsqr(abs(imageNoiseless)-abs(imageNoisy)))/noiselessNorm;
 
 %% B) 1: Using quadratic function prior
 g = @(x) QuadraticFunction(x);
-alphaRange1 = [0:0.05:0.75 0.76:0.02:0.84 0.85:0.05:1];
-rrmse1 = zeros(length(alphaRange1),1);
-
-for i=1:length(alphaRange1)
-    alpha = alphaRange1(i);
-
-    [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha);
-    rrmse1(i) = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
-%     figure(1);
-%     plot(logCostArray(1:iters));
-%     title('Log cost function');
-end
+% alphaRange1 = 1-[0:0.05:0.75 0.76:0.02:0.84 0.85:0.05:1];
+% rrmse1 = zeros(length(alphaRange1),1);
+% 
+% for i=1:length(alphaRange1)
+%     alpha = alphaRange1(i);
+% 
+%     [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha);
+%     rrmse1(i) = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
+% %     figure(1);
+% %     plot(logCostArray(1:iters));
+% %     title('Log cost function');
+% end
 
 % **Getting the optimum params**
-[minVal1,index] = min(rrmse1);
-alpha1 = alphaRange1(index);
+% [minVal1,index] = min(rrmse1);
+% alpha1 = alphaRange1(index);
+
+alpha1 = 0.22; % obtained by optimizing using the commented code above
 
 % **Evaluating at neighbours**
 [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha1*0.8);
@@ -366,36 +384,40 @@ neighborVal1_1 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha1*1.2);
 neighborVal1_2 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
-
-figure(1);
-plot(alphaRange1,rrmse1);
-title('RRMSE vs alpha plot for quadratic prior');
+% 
+% figure(1);
+% plot(alphaRange1,rrmse1);
+% title('RRMSE vs alpha plot for quadratic prior');
 
 %% B) 2: Using huber function prior
 
-alphaRange2 = [0:0.05:0.25 0.26:0.02:0.48 0.5:0.08:1]; 
-lambdaRange2 = [0:0.05:0.1 0.11:0.02:0.34 0.35:0.05:0.6];
+% alphaRange2 = 0.5:0.02:0.7;
+% lambdaRange2 = 0.12:0.01:0.22;
+% 
+% rrmse2 = zeros(length(alphaRange2),length(lambdaRange2));
+% 
+% for i=1:length(alphaRange2)
+%     for j=1:length(lambdaRange2)
+%         g = @(x) HuberFunction(x,lambdaRange2(j));
+%         alpha = alphaRange2(i);
+% 
+%         [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha);
+%         rrmse2(i,j) = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
+%     %     figure(1);
+%     %     plot(logCostArray(1:iters));
+%     %     title('Log cost function');
+%     end
+% end
+% 
+% % **Getting the optimum params**
+% [minVal2,index] = min(min(rrmse2));
+% lambda2 = lambdaRange2(index);
+% [~,index] = min(rrmse2(:,index));
+% alpha2 = alphaRange2(index);
 
-rrmse2 = zeros(length(alphaRange2),length(lambdaRange2));
+lambda2 = 0.13;
+alpha2 = 0.6;  % obtained by optimizing using the commented code above
 
-for i=1:length(alphaRange2)
-    for j=1:length(lambdaRange2)
-        g = @(x) HuberFunction(x,lambdaRange2(j));
-        alpha = alphaRange2(i);
-
-        [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha);
-        rrmse2(i,j) = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
-    %     figure(1);
-    %     plot(logCostArray(1:iters));
-    %     title('Log cost function');
-    end
-end
-
-% **Getting the optimum params**
-[val2,index] = min(min(rrmse2));
-lambda2 = lambdaRange2(index);
-[~,index] = min(rrmse2(:,index));
-alpha2 = alphaRange2(index);
 
 % **Evaluating at neighbours**
 g = @(x) HuberFunction(x,lambda2);
@@ -419,36 +441,39 @@ neighborVal2_4 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 
 % **Plotting RRMSE for huber prior**
-figure(2);
-surf(lambdaRange2,alphaRange2,rrmse2);
-title('RRMSE plot for huber prior');
-xlabel('lambda');
-ylabel('alpha');
+% figure(2);
+% surf(lambdaRange2,alphaRange2,rrmse2);
+% title('RRMSE plot for huber prior');
+% xlabel('lambda');
+% ylabel('alpha');
 
 %% B) 2: Using g3()
 
-alphaRange3 = [0:0.02:0.49 0.5:0.05:0.7];
-lambdaRange3 = [0:0.01:0.19 0.2:0.05:0.5] ;
+% alphaRange3 = [0.92:0.01:1];
+% lambdaRange3 = [0.0:0.005:0.02];
+% 
+% rrmse3 = zeros(length(alphaRange3),length(lambdaRange3));
+% 
+% for i=1:length(alphaRange3)
+%     for j=1:length(lambdaRange3)
+%         g = @(x) G3Function(x,lambdaRange3(j));
+%         alpha = alphaRange3(i);
+% 
+%         [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha);
+%         rrmse3(i,j) = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
+%     %     figure(1);
+%     %     plot(logCostArray(1:iters));
+%     %     title('Log cost function');
+%     end
+% end
+% 
+% [val3,index] = min(min(rrmse3));
+% lambda3 = lambdaRange3(index);
+% [~,index] = min(rrmse3(:,index));
+% alpha3 = alphaRange3(index);
 
-rrmse3 = zeros(length(alphaRange3),length(lambdaRange3));
-
-for i=1:length(alphaRange3)
-    for j=1:length(lambdaRange3)
-        g = @(x) G3Function(x,lambdaRange3(j));
-        alpha = alphaRange3(i);
-
-        [x,~,~] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha);
-        rrmse3(i,j) = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
-    %     figure(1);
-    %     plot(logCostArray(1:iters));
-    %     title('Log cost function');
-    end
-end
-
-[val3,index] = min(min(rrmse3));
-lambda3 = lambdaRange3(index);
-[~,index] = min(rrmse3(:,index));
-alpha3 = alphaRange3(index);
+lambda3 = 0.005;
+alpha3 = 0.97; % obtained by optimizing using the commented code above
 
 % **Evaluating at neighbours**
 g = @(x) HuberFunction(x,lambda3);
@@ -471,41 +496,11 @@ g = @(x) HuberFunction(x,1.2*lambda3);
 neighborVal3_4 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 % **Plotting**
-figure(3);
-surf(lambdaRange3,alphaRange3,rrmse3);
-title('RRMSE plot for g3 prior');
-xlabel('lambda');
-ylabel('alpha');
-
-
-% #Printing#
-fprintf('\n');
-disp('*Part 1) Quadratic funnction g1*');
-disp(strcat('Min RRMSE = ',num2str(minVal1),'; obtained at alpha* = ',...
-    num2str(alpha1)));
-disp(strcat('RRMSE at (0.8alpha*) = ',num2str(neighborVal1_1)));
-disp(strcat('RRMSE at (1.2alpha*) = ',num2str(neighborVal1_2)));
-fprintf('\n');
-
-
-disp('*Part 2) Huber function g2*');
-disp(strcat('Min RRMSE = ',num2str(val2),'; obtained at alpha* = ',...
-    num2str(alpha2),' and lambda* =',num2str(lambda2)));
-disp(strcat('RRMSE at (0.8alpha*,lambda*) = ',num2str(neighborVal2_1)));
-disp(strcat('RRMSE at (1.2alpha*,lambda*) = ',num2str(neighborVal2_2)));
-disp(strcat('RRMSE at (alpha*,0.8lambda*) = ',num2str(neighborVal2_3)));
-disp(strcat('RRMSE at (alpha*,1.2lambda*) = ',num2str(neighborVal2_4)));
-fprintf('\n');
-
-
-disp('*Part 3) function g3*');
-disp(strcat('Min RRMSE = ',num2str(val3),'; obtained at alpha* = ',...
-    num2str(alpha3),' and lambda* =',num2str(lambda3)));
-disp(strcat('RRMSE at (0.8alpha*,lambda*) = ',num2str(neighborVal3_1)));
-disp(strcat('RRMSE at (1.2alpha*,lambda*) = ',num2str(neighborVal3_2)));
-disp(strcat('RRMSE at (alpha*,0.8lambda*) = ',num2str(neighborVal3_3)));
-disp(strcat('RRMSE at (alpha*,1.2lambda*) = ',num2str(neighborVal3_4)));
-fprintf('\n');
+% figure(3);
+% surf(lambdaRange3,alphaRange3,rrmse3);
+% title('RRMSE plot for g3 prior');
+% xlabel('lambda');
+% ylabel('alpha');
 
 
 %% C,D) Best results for each MRF potential function
@@ -519,12 +514,16 @@ g = @(x) QuadraticFunction(x);
 denoised_g1 = abs(x);
 logCost_g1 = logCostArray(1:iters);
 
+minVal1 = sqrt(sumsqr(denoised_g1-imageNoiseless))/noiselessNorm;
+
 % **Huber function g2**
 g = @(x) HuberFunction(x,lambda2);
 [x,logCostArray,iters] = GradientDescent(imageNoisy,imageNoisy,g,100,alpha2);
 
 denoised_g2 = abs(x);
 logCost_g2 = logCostArray(1:iters);
+
+minVal2 = sqrt(sumsqr(denoised_g2-imageNoiseless))/noiselessNorm;
 
 % **Huber function g3**
 g = @(x) G3Function(x,lambda3);
@@ -533,6 +532,8 @@ g = @(x) G3Function(x,lambda3);
 denoised_g3 = abs(x);
 logCost_g3 = logCostArray(1:iters);
 
+minVal3 = sqrt(sumsqr(denoised_g3-imageNoiseless))/noiselessNorm;
+
 
 % Finding the minimum and maximum value of the images for creating a colormap
 jointImage = [abs(imageNoiseless(:)); noisyImg(:); denoised_g1(:); ...
@@ -540,6 +541,37 @@ jointImage = [abs(imageNoiseless(:)); noisyImg(:); denoised_g1(:); ...
 
 minIntensity = min(jointImage);
 maxIntensity = max(jointImage);
+
+% #Printing#
+fprintf('\n');
+disp('*Part 1) Quadratic funnction g1*');
+disp(strcat('Min RRMSE = ',num2str(minVal1),'; obtained at alpha* = ',...
+    num2str(alpha1)));
+disp(strcat('RRMSE at (0.8alpha*) = ',num2str(neighborVal1_1)));
+disp(strcat('RRMSE at (1.2alpha*) = ',num2str(neighborVal1_2)));
+fprintf('\n');
+
+
+disp('*Part 2) Huber function g2*');
+disp(strcat('Min RRMSE = ',num2str(minVal2),'; obtained at alpha* = ',...
+    num2str(alpha2),' and lambda* =',num2str(lambda2)));
+disp(strcat('RRMSE at (0.8alpha*,lambda*) = ',num2str(neighborVal2_1)));
+disp(strcat('RRMSE at (1.2alpha*,lambda*) = ',num2str(neighborVal2_2)));
+disp(strcat('RRMSE at (alpha*,0.8lambda*) = ',num2str(neighborVal2_3)));
+disp(strcat('RRMSE at (alpha*,1.2lambda*) = ',num2str(neighborVal2_4)));
+fprintf('\n');
+
+
+disp('*Part 3) function g3*');
+disp(strcat('Min RRMSE = ',num2str(minVal3),'; obtained at alpha* = ',...
+    num2str(alpha3),' and lambda* =',num2str(lambda3)));
+disp(strcat('RRMSE at (0.8alpha*,lambda*) = ',num2str(neighborVal3_1)));
+disp(strcat('RRMSE at (1.2alpha*,lambda*) = ',num2str(neighborVal3_2)));
+disp(strcat('RRMSE at (alpha*,0.8lambda*) = ',num2str(neighborVal3_3)));
+disp(strcat('RRMSE at (alpha*,1.2lambda*) = ',num2str(neighborVal3_4)));
+fprintf('\n');
+
+
 
 % Scaling every image so that [min,max] maps to [0,1]
 imageNoiseless = (abs(imageNoiseless)-minIntensity)./(maxIntensity-minIntensity);
