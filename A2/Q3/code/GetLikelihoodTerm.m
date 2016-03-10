@@ -1,4 +1,4 @@
-function [val,grad] = GetLikelihoodTerm(x,y,sd)
+function [val,grad] = GetLikelihoodTerm(x,y)
 %GetLikelihoodTerm terms the total likehood value to be used in the cost 
 % function. Also returns the gradient at each point.
 
@@ -10,5 +10,5 @@ function [val,grad] = GetLikelihoodTerm(x,y,sd)
 % val(i) = |x(i)-y(i)|^2/sd^2
 
 grad = x-y;
-val = sum(sum(abs(grad).^2/(sd^2)));
-grad = grad.*2/(sd^2);
+val = sum(sum(abs(grad).^2));
+grad = grad.*2;
