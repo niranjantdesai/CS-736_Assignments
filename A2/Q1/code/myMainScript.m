@@ -29,7 +29,7 @@ logJ = zeros(max_iter);
 % Start gradient descent
 J = obj( S1,b,G,S0,L );
 delta = zeros(2);
-J
+
 for i=1:max_iter
     [ delta(1,1),delta(2,1),delta(2,2) ] = grad( S1,b,G,S0,L );
     L = L - k*delta;  % update L
@@ -55,8 +55,6 @@ for i=1:max_iter
     D21(i) = D(2,1);
     D22(i) = D(2,2);
     logJ(i) = log10(J);
-    J
-    L
 end
 D
 figure()
@@ -90,11 +88,11 @@ title('D22 across iterations');
 % is the eigenvector of D coresponding to the largest eigenvalue
 
 [E,e] = eig(D);
-sprintf('Principal direction along which the diffusion in the 2D plane is the strongest = [%f, %f]',E(1,2),E(2,2))
+fprintf('Principal direction along which the diffusion in the 2D plane is the strongest = [%f, %f] \n',E(1,2),E(2,2))
 
 %% Part c
 % Eigenvectors of a positive definite matrix are orthogonal. Hence, the
 % ratio of diffusion in the principal direction as compared to that in the
 % orthogonal direction is simply the ratio of their respective eigenvalues
 
-sprintf('Diffusion in the principal direction is more as compared to the diffusion in the direction orthogonal to it by a factor of %f',e(2,2)/e(1,1))
+fprintf('Diffusion in the principal direction is more as compared to the diffusion in the direction orthogonal to it by a factor of %f \n',e(2,2)/e(1,1))

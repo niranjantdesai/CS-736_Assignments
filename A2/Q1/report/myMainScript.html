@@ -1,0 +1,260 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>myMainScript</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-03-10"><meta name="DC.source" content="myMainScript.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Data</a></li><li><a href="#3">Part a: Estimation of D</a></li><li><a href="#4">Part b</a></li><li><a href="#5">Part c</a></li></ul></div><pre class="codeinput">clc;
+clear <span class="string">all</span>;
+close <span class="string">all</span>;
+</pre><h2>Data<a name="2"></a></h2><pre class="codeinput">data = [0.5045 - 0.0217i, 0.6874 + 0.0171i, 0.3632 + 0.1789i, 0.3483 + 0.1385i, 0.2606 - 0.0675i, 0.2407 + 0.1517i];
+S1 = real(data);
+S2 = abs(data);
+G = [1,0; 0.866,0.5; 0.5,0.866; 0,1; -0.5,0.866; -0.866,0.5];   <span class="comment">% matrix with the gradient vectors as rows</span>
+b = 0.1;
+S0 = 1;
+</pre><h2>Part a: Estimation of D<a name="3"></a></h2><pre class="codeinput"><span class="comment">% D = L*L' = | L11   0 |*| L11 L21 | = | L11^2       L11*L21|</span>
+<span class="comment">%            | L21 L22 | | 0   L22 |   | L11*L21 L21^2+L22^2|</span>
+<span class="comment">% Initialize D to I</span>
+
+L = eye(2);
+k = 0.1;    <span class="comment">% step size for gradient descent</span>
+ep = 0.01;  <span class="comment">% threshold for gradient descent</span>
+max_iter = 50;  <span class="comment">% maximum number of iterations in gradient descent</span>
+D11 = zeros(max_iter);
+D12 = zeros(max_iter);
+D21 = zeros(max_iter);
+D22 = zeros(max_iter);
+logJ = zeros(max_iter);
+
+<span class="comment">% Start gradient descent</span>
+J = obj( S1,b,G,S0,L );
+delta = zeros(2);
+
+<span class="keyword">for</span> i=1:max_iter
+    [ delta(1,1),delta(2,1),delta(2,2) ] = grad( S1,b,G,S0,L );
+    L = L - k*delta;  <span class="comment">% update L</span>
+    J_n = obj( S1,b,G,S0,L );   <span class="comment">% new value of the objective function</span>
+    <span class="keyword">if</span>(J_n&lt;J)
+        k = k*1.1;
+    <span class="keyword">else</span>
+        k = 0.5*k;
+    <span class="keyword">end</span>
+
+    <span class="comment">% Project onto constraint set</span>
+    <span class="keyword">if</span>(L(1,1)&lt;0)
+        L(1,1)=0;
+    <span class="keyword">end</span>
+    <span class="keyword">if</span>(L(2,2)&lt;0)
+        L(2,2)=0;
+    <span class="keyword">end</span>
+
+    J = J_n;
+    D = L*L';
+    D11(i) = D(1,1);
+    D12(i) = D(1,2);
+    D21(i) = D(2,1);
+    D22(i) = D(2,2);
+    logJ(i) = log10(J);
+<span class="keyword">end</span>
+D
+figure()
+plot(logJ)
+xlabel(<span class="string">'Iteration number'</span>);
+ylabel(<span class="string">'log (J)'</span>);
+title(<span class="string">'Log of the objective function across iterations'</span>)
+figure()
+plot(D11)
+xlabel(<span class="string">'Iteration number'</span>);
+ylabel(<span class="string">'D11'</span>);
+title(<span class="string">'D11 across iterations'</span>);
+figure()
+plot(D12)
+xlabel(<span class="string">'Iteration number'</span>);
+ylabel(<span class="string">'D12'</span>);
+title(<span class="string">'D12 across iterations'</span>);
+figure()
+plot(D21)
+xlabel(<span class="string">'Iteration number'</span>);
+ylabel(<span class="string">'D21'</span>);
+title(<span class="string">'D21 across iterations'</span>);
+figure()
+plot(D22)
+xlabel(<span class="string">'Iteration number'</span>);
+ylabel(<span class="string">'D22'</span>);
+title(<span class="string">'D22 across iterations'</span>);
+</pre><pre class="codeoutput">
+D =
+
+    6.6871   -4.2941
+   -4.2941   13.1410
+
+</pre><img vspace="5" hspace="5" src="myMainScript_01.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_02.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_03.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_04.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_05.png" alt=""> <h2>Part b<a name="4"></a></h2><p>The direction along which the diffusion in the 2D plane is the strongest is the eigenvector of D coresponding to the largest eigenvalue</p><pre class="codeinput">[E,e] = eig(D);
+fprintf(<span class="string">'Principal direction along which the diffusion in the 2D plane is the strongest = [%f, %f] \n'</span>,E(1,2),E(2,2))
+</pre><pre class="codeoutput">Principal direction along which the diffusion in the 2D plane is the strongest = [-0.446789, 0.894639] 
+</pre><h2>Part c<a name="5"></a></h2><p>Eigenvectors of a positive definite matrix are orthogonal. Hence, the ratio of diffusion in the principal direction as compared to that in the orthogonal direction is simply the ratio of their respective eigenvalues</p><pre class="codeinput">fprintf(<span class="string">'Diffusion in the principal direction is more as compared to the diffusion in the direction orthogonal to it by a factor of %f \n'</span>,e(2,2)/e(1,1))
+</pre><pre class="codeoutput">Diffusion in the principal direction is more as compared to the diffusion in the direction orthogonal to it by a factor of 3.364914 
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+clc;
+clear all;
+close all;
+
+%% Data
+data = [0.5045 - 0.0217i, 0.6874 + 0.0171i, 0.3632 + 0.1789i, 0.3483 + 0.1385i, 0.2606 - 0.0675i, 0.2407 + 0.1517i];
+S1 = real(data);
+S2 = abs(data);
+G = [1,0; 0.866,0.5; 0.5,0.866; 0,1; -0.5,0.866; -0.866,0.5];   % matrix with the gradient vectors as rows
+b = 0.1;
+S0 = 1;
+
+%% Part a: Estimation of D
+
+% D = L*L' = | L11   0 |*| L11 L21 | = | L11^2       L11*L21|
+%            | L21 L22 | | 0   L22 |   | L11*L21 L21^2+L22^2|
+% Initialize D to I
+
+L = eye(2);
+k = 0.1;    % step size for gradient descent
+ep = 0.01;  % threshold for gradient descent
+max_iter = 50;  % maximum number of iterations in gradient descent
+D11 = zeros(max_iter);
+D12 = zeros(max_iter);
+D21 = zeros(max_iter);
+D22 = zeros(max_iter);
+logJ = zeros(max_iter);
+
+% Start gradient descent
+J = obj( S1,b,G,S0,L );
+delta = zeros(2);
+
+for i=1:max_iter
+    [ delta(1,1),delta(2,1),delta(2,2) ] = grad( S1,b,G,S0,L );
+    L = L - k*delta;  % update L
+    J_n = obj( S1,b,G,S0,L );   % new value of the objective function
+    if(J_n<J)
+        k = k*1.1;
+    else
+        k = 0.5*k;
+    end
+    
+    % Project onto constraint set
+    if(L(1,1)<0)
+        L(1,1)=0;
+    end
+    if(L(2,2)<0)
+        L(2,2)=0;
+    end
+    
+    J = J_n;
+    D = L*L';
+    D11(i) = D(1,1);
+    D12(i) = D(1,2);
+    D21(i) = D(2,1);
+    D22(i) = D(2,2);
+    logJ(i) = log10(J);
+end
+D
+figure()
+plot(logJ)
+xlabel('Iteration number');
+ylabel('log (J)');
+title('Log of the objective function across iterations')
+figure()
+plot(D11)
+xlabel('Iteration number');
+ylabel('D11');
+title('D11 across iterations');
+figure()
+plot(D12)
+xlabel('Iteration number');
+ylabel('D12');
+title('D12 across iterations');
+figure()
+plot(D21)
+xlabel('Iteration number');
+ylabel('D21');
+title('D21 across iterations');
+figure()
+plot(D22)
+xlabel('Iteration number');
+ylabel('D22');
+title('D22 across iterations');
+
+%% Part b
+% The direction along which the diffusion in the 2D plane is the strongest
+% is the eigenvector of D coresponding to the largest eigenvalue
+
+[E,e] = eig(D);
+fprintf('Principal direction along which the diffusion in the 2D plane is the strongest = [%f, %f] \n',E(1,2),E(2,2))
+
+%% Part c
+% Eigenvectors of a positive definite matrix are orthogonal. Hence, the
+% ratio of diffusion in the principal direction as compared to that in the
+% orthogonal direction is simply the ratio of their respective eigenvalues
+
+fprintf('Diffusion in the principal direction is more as compared to the diffusion in the direction orthogonal to it by a factor of %f \n',e(2,2)/e(1,1))
+##### SOURCE END #####
+--></body></html>
