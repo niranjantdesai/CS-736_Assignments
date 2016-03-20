@@ -6,51 +6,52 @@ clc;
 clear;
 close all;
 load('../data/assignmentImageReconstructionBrain.mat');
+imageKspaceData_ = fftshift(imageKspaceData);
+imageKspaceMask = fftshift(imageKspaceMask);
+xInit = ifft2(imageKspaceData_); % Initial solution in gradient descent
 
-noiselessNorm = sqrt(sumsqr(abs(imageNoiseless)));
-xInit = ifft2(imageKspaceData); % Initial solution in gradient descent
 
-maskMat = GetMask(imageKspaceMask);
 
 %% Using quadratic function prior
-% close all;
-% g = @(x) QuadraticFunction(x);
+close all
+g = @(x) QuadraticFunction(x);
 
-% alphaRange1 = 1-[0:0.05:0.75 0.76:0.02:0.84 0.85:0.05:1];
-% rrmse1 = zeros(length(alphaRange1),1);
-% 
-% for i=1:length(alphaRange1)
-%     alpha = alphaRange1(i);
-% 
-%     [x,~,~] = GradientDescent(xInit,imageKspaceData,g,100,alpha,imageKspaceMask);
-%     rrmse1(i) = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
-% %     figure(1);
-% %     plot(logCostArray(1:iters));
-% %     title('Log cost function');
-% end
+alphaRange1 = [0.99965:0.00005:0.99999];
+rrmse1 = zeros(length(alphaRange1),1);
+
+for i=1:length(alphaRange1)
+    alpha = alphaRange1(i);
+
+    [x,logCost,iters] = GradientDescent(xInit,imageKspaceData_,g,100,alpha,imageKspaceMask);
+    
+    disp(iters);
+    figure()
+    imshow(abs(x))
+    str = sprintf('alpha = %f',alpha);
+    title(str)
+    saveas(gcf,strcat('../results/g1/',num2str(alpha),'.png'));
+
+end
 
 % **Getting the optimum params**
-% [minVal1,index] = min(rrmse1);
-% alpha1 = alphaRange1(index);
+[minVal1,index] = min(rrmse1);
+alpha1 = alphaRange1(index);
 
-% figure()
-% plot(rrmse1)
-% title('rrmse for quadratic prior');
 
 % ** Evaluating for optimum params **
-alpha1 = 0.99985; % obtained by using the commented code above for optimization
-
-g = @(x) QuadraticFunction(x);
-[x,logCostArray,iters1] = GradientDescent(xInit,imageKspaceData,g,100,alpha1,imageKspaceMask);
-x1 = abs(x);
-logCost1 = logCostArray(1:iters1);
-minVal1 = sqrt(sumsqr(abs(imageNoiseless)-x1))/noiselessNorm;
-
-% ** Evaluating at neighbors **
-[x,~,~] = GradientDescent(xInit,imageKspaceData,g,100,alpha1*0.8,imageKspaceMask);
-neighborVal1_1 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
-[x,~,~] = GradientDescent(xInit,imageKspaceData,g,100,alpha1*1.2,imageKspaceMask);
-neighborVal1_2 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
+% alpha1 = 0.99985; % obtained by using the commented code above for optimization
+% 
+% g = @(x) QuadraticFunction(x);
+% [x,logCostArray,iters1] = GradientDescent(xInit,imageKspaceData,g,100,alpha1,imageKspaceMask);
+% x1 = abs(x);
+% logCost1 = logCostArray(1:iters1);
+% minVal1 = sqrt(sumsqr(abs(imageNoiseless)-x1))/noiselessNorm;
+% 
+% % ** Evaluating at neighbors **
+% [x,~,~] = GradientDescent(xInit,imageKspaceData,g,100,alpha1*0.8,imageKspaceMask);
+% neighborVal1_1 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
+% [x,~,~] = GradientDescent(xInit,imageKspaceData,g,100,alpha1*1.2,imageKspaceMask);
+% neighborVal1_2 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 %% Using Huber function prior
 
@@ -87,7 +88,7 @@ lambda2 = 0.13;
 alpha2 = 0.6; % obtained by using the optimization code above (commented)
 
 g = @(x) HuberFunction(x,lambda2);
-[x,logCostArray,iters2] = GradientDescent(xInit,imageKspaceData,g,100,alpha2,imageKspaceMask);
+[x,logCostArray,iters2] = GradientDescent(xInit,imageKspaceData_,g,100,alpha2,imageKspaceMask);
 x2 = abs(x);
 logCost2 = logCostArray(1:iters2);
 minVal2 = sqrt(sumsqr(abs(imageNoiseless)-x2))/noiselessNorm;
@@ -96,21 +97,21 @@ minVal2 = sqrt(sumsqr(abs(imageNoiseless)-x2))/noiselessNorm;
 % **Evaluating at neighbours**
 g = @(x) HuberFunction(x,lambda2);
 % (0.8*a,b)
-[x,~,~] =  GradientDescent(xInit,imageKspaceData,g,100,alpha2*0.8,imageKspaceMask);
+[x,~,~] =  GradientDescent(xInit,imageKspaceData_,g,100,alpha2*0.8,imageKspaceMask);
 neighborVal2_1 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 % (1.2*a,b)
-[x,~,~] =  GradientDescent(xInit,imageKspaceData,g,100,alpha2*1.2,imageKspaceMask);
+[x,~,~] =  GradientDescent(xInit,imageKspaceData_,g,100,alpha2*1.2,imageKspaceMask);
 neighborVal2_2 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 g = @(x) HuberFunction(x,0.8*lambda2);
 % (a,0.8*b)
-[x,~,~] =  GradientDescent(xInit,imageKspaceData,g,100,alpha2,imageKspaceMask);
+[x,~,~] =  GradientDescent(xInit,imageKspaceData_,g,100,alpha2,imageKspaceMask);
 neighborVal2_3 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 g = @(x) HuberFunction(x,1.2*lambda2);
 % (a,1.2*b)
-[x,~,~] =  GradientDescent(xInit,imageKspaceData,g,100,alpha2,imageKspaceMask);
+[x,~,~] =  GradientDescent(xInit,imageKspaceData_,g,100,alpha2,imageKspaceMask);
 neighborVal2_4 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 
@@ -152,7 +153,7 @@ alpha3 = 0.99996;
 lambda3 = 0.9;
 
 g = @(x) G3Function(x,lambda3);
-[x,logCostArray,iters3] = GradientDescent(xInit,imageKspaceData,g,100,alpha3,imageKspaceMask);
+[x,logCostArray,iters3] = GradientDescent(xInit,imageKspaceData_,g,100,alpha3,imageKspaceMask);
 x3 = abs(x);
 logCost3 = logCostArray(1:iters3);
 minVal3 = sqrt(sumsqr(abs(imageNoiseless)-x3))/noiselessNorm;
@@ -160,21 +161,21 @@ minVal3 = sqrt(sumsqr(abs(imageNoiseless)-x3))/noiselessNorm;
 % **Evaluating at neighbours**
 g = @(x) HuberFunction(x,lambda3);
 % (0.8*a,b)
-[x,~,~] =  GradientDescent(xInit,imageKspaceData,g,100,alpha3*0.8,imageKspaceMask);
+[x,~,~] =  GradientDescent(xInit,imageKspaceData_,g,100,alpha3*0.8,imageKspaceMask);
 neighborVal3_1 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 % (1.2*a,b)
-[x,~,~] =  GradientDescent(xInit,imageKspaceData,g,100,alpha3*1.2,imageKspaceMask);
+[x,~,~] =  GradientDescent(xInit,imageKspaceData_,g,100,alpha3*1.2,imageKspaceMask);
 neighborVal3_2 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 g = @(x) HuberFunction(x,0.8*lambda3);
 % (a,0.8*b)
-[x,~,~] =  GradientDescent(xInit,imageKspaceData,g,100,alpha3,imageKspaceMask);
+[x,~,~] =  GradientDescent(xInit,imageKspaceData_,g,100,alpha3,imageKspaceMask);
 neighborVal3_3 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 g = @(x) HuberFunction(x,1.2*lambda3);
 % (a,1.2*b)
-[x,~,~] =  GradientDescent(xInit,imageKspaceData,g,100,alpha3,imageKspaceMask);
+[x,~,~] =  GradientDescent(xInit,imageKspaceData_,g,100,alpha3,imageKspaceMask);
 neighborVal3_4 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 
