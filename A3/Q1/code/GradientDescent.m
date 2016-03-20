@@ -1,4 +1,4 @@
-function [x,logCostArray,iter,stepSize] = GradientDescent(xInit,y,g,maxIters,alpha,S)
+function [x,logCostArray,iter] = GradientDescent(xInit,y,g,maxIters,alpha,S)
 %GradientDescent Implements adaptive gradient descent using potential function
 %for MRF and other params passed as arguments
 
