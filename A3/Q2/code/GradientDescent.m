@@ -3,8 +3,8 @@ function [x,logCostArray,iter] = GradientDescent(xInit,y,g,maxIters,alpha,S)
 %for MRF and other params passed as arguments
 
 x = xInit;
-stepSize=0.005; % Initial step size
-gradientThreshold = 1e-8; % Threshold for gradient change
+stepSize=1e-4; % Initial step size
+gradientThreshold = 1e-12; % Threshold for gradient change
 
 logCostArray = zeros(maxIters,1); 
 
@@ -18,7 +18,7 @@ logCostArray(1)=logCost;
 iter=1;
 while(1)
 
-    if iter>=maxIters || max(max(abs(grad)))<gradientThreshold || stepSize<1e-10
+    if iter>=maxIters || max(max(abs(grad)))<gradientThreshold || stepSize<1e-12
         break
     end
     xNew = x-stepSize.*grad;

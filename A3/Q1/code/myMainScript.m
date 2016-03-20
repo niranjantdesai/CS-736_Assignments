@@ -5,12 +5,12 @@
 clc;
 clear;
 close all;
-load('../data/assignmentImageReconstructionBrain.mat');
+load('../data/assignmentImageReconstructionPhantom.mat');
 
 noiselessNorm = sqrt(sumsqr(abs(imageNoiseless)));
 xInit = ifft2(imageKspaceData); % Initial solution in gradient descent
-
-maskMat = GetMask(imageKspaceMask);
+rrmse_init = sqrt(sumsqr(abs(imageNoiseless)-abs(xInit)))/noiselessNorm;
+fprintf('Initial rrmse = %f \n',rrmse_init);
 
 %% Using quadratic function prior
 % close all;
@@ -83,8 +83,8 @@ neighborVal1_2 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 % ylabel('alpha');
 
 % ** Evaluating for optimum params**
-lambda2 = 0.13;
-alpha2 = 0.6; % obtained by using the optimization code above (commented)
+lambda2 = 0.1;
+alpha2 = 0.99981; % obtained by using the optimization code above (commented)
 
 g = @(x) HuberFunction(x,lambda2);
 [x,logCostArray,iters2] = GradientDescent(xInit,imageKspaceData,g,100,alpha2,imageKspaceMask);
@@ -149,7 +149,7 @@ neighborVal2_4 = sqrt(sumsqr(abs(imageNoiseless)-abs(x)))/noiselessNorm;
 
 % ** Evaluating for optimum params
 alpha3 = 0.99996;
-lambda3 = 0.9;
+lambda3 = 0.17;
 
 g = @(x) G3Function(x,lambda3);
 [x,logCostArray,iters3] = GradientDescent(xInit,imageKspaceData,g,100,alpha3,imageKspaceMask);
