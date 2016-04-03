@@ -1,0 +1,45 @@
+function [  ] = bias( w,y,u,c )
+%bias Finds the optimal value of the bias field within every iteration
+
+imgSize = size(y);
+
+for i = 1:1:imgSize(1)
+    for j = 1:1:imgSize(2)
+        if (imageMask(i,j)== 1)
+            numerator1 = 0;
+            denominator1 = 0;
+            for l = -windowRadius:1:windowRadius
+                for m =  -windowRadius:1:windowRadius
+                    if(imageMask(i+l,j+m) == 1)
+                        numerator2 = 0;
+                        denominator2 = 0;
+                        for k = 1:1:K
+                            numerator2 = numerator2 + (u(i+l,j+m,k)^q)*c(k);
+                            denominator2 = denominator2 + (u(i+l,j+m,k)^q)*c(k)*c(k);
+                        end
+                        numerator1 = numerator1 + w(l+windowRadius+1, m+windowRadius+1)*imageData(i+l,j+m)*numerator2;
+                        denominator1 = denominator1 + w(l+windowRadius+1, m+windowRadius+1)*denominator2;
+                     end
+                 end
+             end
+              b(i,j) = numerator1/denominator1;
+            end
+        end
+        waitbar(i/imgSize(1));
+end
+
+for i=1:imgSize(1)
+   for j=1:imgSize(2)
+       innerSumNum = 0;
+       innerSumDenom = 0;
+       num=0;
+    denom=0;
+      for k=1:K
+         innerSumNum = innerSumNum + (u(i,j,k)^q)*c(k);
+         innerSumDenom = innerSumDenom + (u(i,j,k)^q)*(c(k)^2);
+      end
+   end
+end
+
+end
+
