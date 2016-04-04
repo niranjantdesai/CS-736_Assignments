@@ -9,15 +9,17 @@ d = zeros(K,1);
 
 for i=1:imgSize(1)
    for j=1:imgSize(2)
-      if(mask(i,j)>0)
-          for k = 1:K     
-              d(k) = sum(w(0:2*r+1, 0:2*r+1)*((y(i,j) - c(k).*b(i+-r:r,j+-r:r)).^2));
-          end
-          u(i,j,:) = (1./d).^(1/(q-1));
-          u(i,j,:) = u(i,j,:)/(sum(u(i,j,:)));
-      end
+       for k = 1:K     
+          d(k) = sum(w(0:2*r+1, 0:2*r+1)*((y(i,j) - c(k).*b(i+-r:r,j+-r:r)).^2));
+       end
+       u(i,j,:) = (1./d).^(1/(q-1));
+       u(i,j,:) = u(i,j,:)/(sum(u(i,j,:)));
    end
 end
 
+for i=1:K
+    temp = u(:,:,i);
+    temp(~logical(mask))=0;
+    u(:,:,i) = temp;
 end
 
