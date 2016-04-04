@@ -14,11 +14,9 @@ for i=1:K
 end
 
 u = (1./d).^(1/(q-1));
-sum_u = sum(u,3);
 
 for i=1:K
     temp = u(:,:,i);
-    temp = temp./sum_u;
     temp(~logical(mask))=0;
     u(:,:,i) = temp;
     
