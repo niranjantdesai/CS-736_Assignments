@@ -26,14 +26,14 @@ for i=1:maxIters
     [posterior,xNew] = max(mem,[],3);
     xNew = xNew.*validMap;
     
-    logPosteriorBefore = log(sum(sum(posterior)));
+    logPosteriorBefore = sum(sum(log(posterior(logical(validMap)))));
     fprintf('Iter %d: log posterior before = %f\n',i,logPosteriorBefore);
     
-    % Gettinh posterior for the new label map
+    % Getting posterior for the new label map
     memNew = GetMemberships(y,means,sigmas,xNew,validMap,priorFunction);
     [posterior,~] = max(memNew,[],3);
     
-    logPosteriorAfter = log(sum(sum(posterior)));
+    logPosteriorAfter = sum(sum(log(posterior(logical(validMap)))));
     fprintf('Iter %d: log posterior after = %f\n',i,logPosteriorAfter);
     
     

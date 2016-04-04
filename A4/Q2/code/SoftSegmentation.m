@@ -54,11 +54,11 @@ for i=1:K
 end
 
 %% Part d) Perform Segmentation
-
 xInit = labelMap;
+% xInit = zeros(size(imageData));
 
 [x,means,sigmas,iters] = PerformSegmentation(xInit,imageData,means_init,...
-    sigmas_init,5,imageMask,priorFunction);
+    sigmas_init,20,imageMask,priorFunction);
 
 %% Viewing results
 
