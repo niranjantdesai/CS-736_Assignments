@@ -15,35 +15,54 @@ figure()
 imshow(imageData)
 title('Corrupted image')
 
+%% Initialize class means and memberships
+
+% Using k-means for label initialization
+% Motivation is that it gives quick division of the values into 3 classes
+K=3;    % Number of segments
+validImage = imageData(logical(imageMask));
+[~,cInit] = kmeans(validImage,K);
+
+% Once we have the initial class means, we perform binary membership
+% assignment at each pixel in which the membership corresponding to the
+% closest class mean is assigned 1 and the rest are assigned 0. This gives
+% a close approximation to the actual memberships
+uInit = zeros(imgSize(1),imgSize(2),K);
+for i=1:imgSize(1)
+   for j=1:imgSize(2)
+      if(imageMask(i,j)>0)
+         t = [imageData(i,j);imageData(i,j);imageData(i,j)];
+         [~,I] = min(abs(t-cInit));
+         uInit(i,j,I) = 1;
+      end
+   end
+end
+
 %% Defining parameters and neighbourhood mask
-K = 3;  % Number of segments
-q = 4;    % Fuzziness parameter
-cInit = [0;0.5;1];     % Initialize class means
-uInit = (1/K)*ones(imgSize(1),imgSize(2),K);   % Memberships, initialized with a uniform distribution
-bInit = ones(imgSize);   % Bias field; initially chosen to be a constant intensity image
+q = 1.6;    % Fuzziness parameter
+bInit = ones(imgSize).*imageMask;   % Bias field; initially chosen to be a constant intensity image
 
 % Create neighbourhood mask
-windowSize = 25;    % 25 x 25 weight window
-windowRadius = floor(windowSize/2);
-sigma = 2;
-w = fspecial('gaussian', windowSize, sigma);
+windowSize = 10;
+w = fspecial('gaussian', windowSize);
 
 % Algorithm parameters
-maxIters = 7;
+maxIters = 20;
 J = zeros(maxIters,1);  % Objective function across iterations
 
 
 %% Modified FCM
-
+y = imageData.*imageMask;
+u = uInit;
+c = cInit;
+b = bInit;
 for i=1:maxIters
-   u = memberships( w,imageData,cInit,bInit,imageMask,K,windowRadius,q );     % Keeping class means and bias fixed, update memberships
-   uInit = u;
-   c = classMeans( uInit,imageData,w,bInit,imageMask,q,K);  % Keeping memberships, multipliers and bias fixed, update class means
-   cInit = c;
-   b = bias( w,imageData,uInit,cInit,imageMask,windowRadius,K,q );   % Keeping memberships, multipliers and class means fixed, update bias
-   bInit = b;
-   J(i) = objEval( imageData,imageMask,windowRadius,w,c,b,u,q,K );    % Evaluate objective function in the current iteration
-   fprintf('Value of the objective function at iteration %d = %f',i,J(i));
+   u = memberships( w,y,c,b,imageMask,K,q );     % Keeping class means and bias fixed, update memberships
+   c = classMeans( u,imageData,w,b,q,K);  % Keeping memberships, multipliers and bias fixed, update class means
+   b = bias( w,imageData,u,c,K,q );   % Keeping memberships, multipliers and class means fixed, update bias
+   b(~logical(imageMask))=0;
+   J(i) = objEval( imageData,w,c,b,u,q,K );    % Evaluate objective function in the current iteration
+   fprintf('Value of the objective function at iteration %d = %f \n',i,J(i));
 end
 
 %% Show required images
@@ -84,11 +103,11 @@ imshow(R)
 title('Residual image')
 
 %% Report parameters and initial estimates
-fprintf('q = %f',q);
+fprintf('q = %f \n',q);
 
 % Show neighbourhood mask
 figure()
-imshow(w)
+imagesc(w)
 title('Neighbourhood mask')
 
 % Show initial estimates for the membership values
@@ -102,5 +121,5 @@ figure()
 imshow(uInit(:,:,3))
 title('Initial class membership image estimate 3')
 
-fprintf('The initial estimates for the class means are [%f %f %f]',cInit(1),cInit(2),cInit(3));
-fprintf('The optimal estimates for the class means are [%f %f %f]',c(1),c(2),c(3));
+fprintf('The initial estimates for the class means are [%f %f %f] \n',cInit(1),cInit(2),cInit(3));
+fprintf('The optimal estimates for the class means are [%f %f %f] \n',c(1),c(2),c(3));

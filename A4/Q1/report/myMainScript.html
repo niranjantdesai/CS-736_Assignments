@@ -1,0 +1,327 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>myMainScript</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-04-05"><meta name="DC.source" content="myMainScript.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Loading image</a></li><li><a href="#3">Initialize class means and memberships</a></li><li><a href="#4">Defining parameters and neighbourhood mask</a></li><li><a href="#5">Modified FCM</a></li><li><a href="#6">Show required images</a></li><li><a href="#7">Construct bias-removed image</a></li><li><a href="#8">Construct residual image</a></li><li><a href="#9">Report parameters and initial estimates</a></li></ul></div><pre class="codeinput"><span class="comment">% CS 736: Assignment 4</span>
+<span class="comment">% Date: April 3, 2016</span>
+<span class="comment">% Authors: Niranjan Thakurdesai, Ayush Baid</span>
+
+clc;
+clear;
+close <span class="string">all</span>;
+</pre><h2>Loading image<a name="2"></a></h2><pre class="codeinput">load(<span class="string">'../data/assignmentSegmentBrain.mat'</span>);
+imgSize = size(imageData);
+
+<span class="comment">% Show corrupted image</span>
+figure()
+imshow(imageData)
+title(<span class="string">'Corrupted image'</span>)
+</pre><img vspace="5" hspace="5" src="myMainScript_01.png" alt=""> <h2>Initialize class means and memberships<a name="3"></a></h2><pre class="codeinput"><span class="comment">% Using k-means for label initialization</span>
+<span class="comment">% Motivation is that it gives quick division of the values into 3 classes</span>
+K=3;    <span class="comment">% Number of segments</span>
+validImage = imageData(logical(imageMask));
+[~,cInit] = kmeans(validImage,K);
+
+<span class="comment">% Once we have the initial class means, we perform binary membership</span>
+<span class="comment">% assignment at each pixel in which the membership corresponding to the</span>
+<span class="comment">% closest class mean is assigned 1 and the rest are assigned 0. This gives</span>
+<span class="comment">% a close approximation to the actual memberships</span>
+uInit = zeros(imgSize(1),imgSize(2),K);
+<span class="keyword">for</span> i=1:imgSize(1)
+   <span class="keyword">for</span> j=1:imgSize(2)
+      <span class="keyword">if</span>(imageMask(i,j)&gt;0)
+         t = [imageData(i,j);imageData(i,j);imageData(i,j)];
+         [~,I] = min(abs(t-cInit));
+         uInit(i,j,I) = 1;
+      <span class="keyword">end</span>
+   <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><h2>Defining parameters and neighbourhood mask<a name="4"></a></h2><pre class="codeinput">q = 1.6;    <span class="comment">% Fuzziness parameter</span>
+bInit = ones(imgSize).*imageMask;   <span class="comment">% Bias field; initially chosen to be a constant intensity image</span>
+
+<span class="comment">% Create neighbourhood mask</span>
+windowSize = 10;
+w = fspecial(<span class="string">'gaussian'</span>, windowSize);
+
+<span class="comment">% Algorithm parameters</span>
+maxIters = 20;
+J = zeros(maxIters,1);  <span class="comment">% Objective function across iterations</span>
+</pre><h2>Modified FCM<a name="5"></a></h2><pre class="codeinput">y = imageData.*imageMask;
+u = uInit;
+c = cInit;
+b = bInit;
+<span class="keyword">for</span> i=1:maxIters
+   u = memberships( w,y,c,b,imageMask,K,q );     <span class="comment">% Keeping class means and bias fixed, update memberships</span>
+   c = classMeans( u,imageData,w,b,q,K);  <span class="comment">% Keeping memberships, multipliers and bias fixed, update class means</span>
+   b = bias( w,imageData,u,c,K,q );   <span class="comment">% Keeping memberships, multipliers and class means fixed, update bias</span>
+   b(~logical(imageMask))=0;
+   J(i) = objEval( imageData,w,c,b,u,q,K );    <span class="comment">% Evaluate objective function in the current iteration</span>
+   fprintf(<span class="string">'Value of the objective function at iteration %d = %f \n'</span>,i,J(i));
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Value of the objective function at iteration 1 = 0.161735 
+Value of the objective function at iteration 2 = 0.106530 
+Value of the objective function at iteration 3 = 0.095837 
+Value of the objective function at iteration 4 = 0.090521 
+Value of the objective function at iteration 5 = 0.088369 
+Value of the objective function at iteration 6 = 0.084542 
+Value of the objective function at iteration 7 = 0.079527 
+Value of the objective function at iteration 8 = 0.077301 
+Value of the objective function at iteration 9 = 0.073780 
+Value of the objective function at iteration 10 = 0.069993 
+Value of the objective function at iteration 11 = 0.065701 
+Value of the objective function at iteration 12 = 0.061982 
+Value of the objective function at iteration 13 = 0.061287 
+Value of the objective function at iteration 14 = 0.060606 
+Value of the objective function at iteration 15 = 0.058715 
+Value of the objective function at iteration 16 = 0.056449 
+Value of the objective function at iteration 17 = 0.055920 
+Value of the objective function at iteration 18 = 0.055913 
+Value of the objective function at iteration 19 = 0.054949 
+Value of the objective function at iteration 20 = 0.054532 
+</pre><h2>Show required images<a name="6"></a></h2><p>Showing optimal class membership image estimates</p><pre class="codeinput">figure()
+imshow(u(:,:,1))
+title(<span class="string">'Optimal class membership image estimate 1'</span>)
+figure()
+imshow(u(:,:,2))
+title(<span class="string">'Optimal class membership image estimate 2'</span>)
+figure()
+imshow(u(:,:,3))
+title(<span class="string">'Optimal class membership image estimate 3'</span>)
+
+<span class="comment">% Showing optimal bias-field image estimate</span>
+figure()
+imshow(b)
+title(<span class="string">'Showing optimal bias-field image estimate'</span>)
+</pre><img vspace="5" hspace="5" src="myMainScript_02.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_03.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_04.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_05.png" alt=""> <h2>Construct bias-removed image<a name="7"></a></h2><pre class="codeinput">A = zeros(imgSize);
+<span class="keyword">for</span> i=1:K
+   A = A + u(:,:,i)*c(i);
+<span class="keyword">end</span>
+A = A.*imageMask;
+
+<span class="comment">% Show bias-removed image</span>
+figure()
+imshow(A)
+title(<span class="string">'Bias-removed image'</span>)
+</pre><img vspace="5" hspace="5" src="myMainScript_06.png" alt=""> <h2>Construct residual image<a name="8"></a></h2><pre class="codeinput">R = imageData - A.*b;
+
+<span class="comment">% Show residual image</span>
+figure()
+imshow(R)
+title(<span class="string">'Residual image'</span>)
+</pre><img vspace="5" hspace="5" src="myMainScript_07.png" alt=""> <h2>Report parameters and initial estimates<a name="9"></a></h2><pre class="codeinput">fprintf(<span class="string">'q = %f \n'</span>,q);
+
+<span class="comment">% Show neighbourhood mask</span>
+figure()
+imagesc(w)
+title(<span class="string">'Neighbourhood mask'</span>)
+
+<span class="comment">% Show initial estimates for the membership values</span>
+figure()
+imshow(uInit(:,:,1))
+title(<span class="string">'Initial class membership image estimate 1'</span>)
+figure()
+imshow(uInit(:,:,2))
+title(<span class="string">'Initial class membership image estimate 2'</span>)
+figure()
+imshow(uInit(:,:,3))
+title(<span class="string">'Initial class membership image estimate 3'</span>)
+
+fprintf(<span class="string">'The initial estimates for the class means are [%f %f %f] \n'</span>,cInit(1),cInit(2),cInit(3));
+fprintf(<span class="string">'The optimal estimates for the class means are [%f %f %f] \n'</span>,c(1),c(2),c(3));
+</pre><pre class="codeoutput">q = 1.600000 
+The initial estimates for the class means are [0.453122 0.224159 0.634161] 
+The optimal estimates for the class means are [0.498997 0.293478 0.601072] 
+</pre><img vspace="5" hspace="5" src="myMainScript_08.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_09.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_10.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_11.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% CS 736: Assignment 4
+% Date: April 3, 2016
+% Authors: Niranjan Thakurdesai, Ayush Baid
+
+clc;
+clear;
+close all;
+
+%% Loading image
+load('../data/assignmentSegmentBrain.mat');
+imgSize = size(imageData);
+
+% Show corrupted image
+figure()
+imshow(imageData)
+title('Corrupted image')
+
+%% Initialize class means and memberships
+
+% Using k-means for label initialization
+% Motivation is that it gives quick division of the values into 3 classes
+K=3;    % Number of segments
+validImage = imageData(logical(imageMask));
+[~,cInit] = kmeans(validImage,K);
+
+% Once we have the initial class means, we perform binary membership
+% assignment at each pixel in which the membership corresponding to the
+% closest class mean is assigned 1 and the rest are assigned 0. This gives
+% a close approximation to the actual memberships
+uInit = zeros(imgSize(1),imgSize(2),K);
+for i=1:imgSize(1)
+   for j=1:imgSize(2)
+      if(imageMask(i,j)>0)
+         t = [imageData(i,j);imageData(i,j);imageData(i,j)];
+         [~,I] = min(abs(t-cInit));
+         uInit(i,j,I) = 1;
+      end
+   end
+end
+
+%% Defining parameters and neighbourhood mask
+q = 1.6;    % Fuzziness parameter
+bInit = ones(imgSize).*imageMask;   % Bias field; initially chosen to be a constant intensity image
+
+% Create neighbourhood mask
+windowSize = 10;
+w = fspecial('gaussian', windowSize);
+
+% Algorithm parameters
+maxIters = 20;
+J = zeros(maxIters,1);  % Objective function across iterations
+
+
+%% Modified FCM
+y = imageData.*imageMask;
+u = uInit;
+c = cInit;
+b = bInit;
+for i=1:maxIters
+   u = memberships( w,y,c,b,imageMask,K,q );     % Keeping class means and bias fixed, update memberships
+   c = classMeans( u,imageData,w,b,q,K);  % Keeping memberships, multipliers and bias fixed, update class means
+   b = bias( w,imageData,u,c,K,q );   % Keeping memberships, multipliers and class means fixed, update bias
+   b(~logical(imageMask))=0;
+   J(i) = objEval( imageData,w,c,b,u,q,K );    % Evaluate objective function in the current iteration
+   fprintf('Value of the objective function at iteration %d = %f \n',i,J(i));
+end
+
+%% Show required images
+% Showing optimal class membership image estimates
+figure()
+imshow(u(:,:,1))
+title('Optimal class membership image estimate 1')
+figure()
+imshow(u(:,:,2))
+title('Optimal class membership image estimate 2')
+figure()
+imshow(u(:,:,3))
+title('Optimal class membership image estimate 3')
+
+% Showing optimal bias-field image estimate
+figure()
+imshow(b)
+title('Showing optimal bias-field image estimate')
+
+%% Construct bias-removed image
+A = zeros(imgSize);
+for i=1:K
+   A = A + u(:,:,i)*c(i);
+end
+A = A.*imageMask;
+
+% Show bias-removed image
+figure()
+imshow(A)
+title('Bias-removed image')
+
+%% Construct residual image
+R = imageData - A.*b;
+
+% Show residual image
+figure()
+imshow(R)
+title('Residual image')
+
+%% Report parameters and initial estimates
+fprintf('q = %f \n',q);
+
+% Show neighbourhood mask
+figure()
+imagesc(w)
+title('Neighbourhood mask')
+
+% Show initial estimates for the membership values
+figure()
+imshow(uInit(:,:,1))
+title('Initial class membership image estimate 1')
+figure()
+imshow(uInit(:,:,2))
+title('Initial class membership image estimate 2')
+figure()
+imshow(uInit(:,:,3))
+title('Initial class membership image estimate 3')
+
+fprintf('The initial estimates for the class means are [%f %f %f] \n',cInit(1),cInit(2),cInit(3));
+fprintf('The optimal estimates for the class means are [%f %f %f] \n',c(1),c(2),c(3));
+
+##### SOURCE END #####
+--></body></html>

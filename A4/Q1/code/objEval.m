@@ -1,27 +1,23 @@
-function [ J ] = objEval( y,mask,windowRadius,w,c,b,u,q,K )
+function [ J ] = objEval( y,w,c,b,u,q,K )
 %objEval Evaluates the objective function of modified FCM with bias
 %correction 
 
 imgSize = size(y);
-d = zeros(K,1);
-J=0;
+d = zeros(imgSize(1),imgSize(2),K);
+maskSum = sum(sum(w));
 
-for i=1:imgSize(1)
-   for j=1:imgSize(2)
-       if(mask(i,j) > 0)
-           for k=1:K
-               for l=-windowRadius:windowRadius
-                  for m=-windowRadius:windowRadius
-                      if(mask(i+l,j+m) > 0)
-                         d(k) = d(k) + w(l+windowRadius+1, m+windowRadius+1)*((y(i,j) - c(k)*b(i+l,j+m))^2); 
-                      end
-                  end
-               end
-               J = J + (u(i,j,k)^q)*d(k);
-           end
-       end
-   end
+t1 = conv2(b,w,'same');
+t2 = conv2(b.^2,w,'same');
+t3 = zeros(imgSize);
+for i=1:K
+    d(:,:,i) = (y.^2).*maskSum - 2.*c(i).*y.*t1 + (c(i)^2).*t2;
 end
+
+for k=1:K
+    t3 = t3 + (u(:,:,k).^q).*d(:,:,k);
+end
+
+J = sum(sum(conv2(w,t3,'same')));
 
 end
 
