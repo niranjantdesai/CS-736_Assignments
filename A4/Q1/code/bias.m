@@ -1,8 +1,8 @@
-function [ b ] = bias( w,y,u,c,mask,windowRadius )
+function [ b ] = bias( w,y,u,c,mask,windowRadius,K,q )
 %bias Finds the optimal value of the bias field within every iteration
 
 imgSize = size(y);
-bias = zeros(imgSize);
+b = zeros(imgSize);
 
 for i = 1:imgSize(1)
     for j = 1:imgSize(2)

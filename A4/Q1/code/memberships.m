@@ -1,8 +1,8 @@
-function [ u ] = memberships( w,y,c,b,mask,K,windowRadius )
+function [ u ] = memberships( w,y,c,b,mask,K,windowRadius,q )
 %memberships Finds optimal values of memberships within every iteration
 
 imgSize = size(y);
-% u = zeros(imgSize);
+u = zeros(imgSize(1),imgSize(2),K);
 d = zeros(K,1);
 
 for i=1:imgSize(1)
