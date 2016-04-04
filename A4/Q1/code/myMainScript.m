@@ -65,10 +65,8 @@ title('Showing optimal bias-field image estimate')
 
 %% Construct bias-removed image
 A = zeros(imgSize);
-for i=1:imgSize(1)
-   for j=1:imgSize(2)
-      A(i,j) = sum(u(i,j,:).*c); 
-   end
+for i=1:K
+   A = A + u(:,:,i)*c(i);
 end
 A = A.*imageMask;
 
