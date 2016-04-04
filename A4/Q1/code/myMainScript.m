@@ -3,7 +3,7 @@
 % Authors: Niranjan Thakurdesai, Ayush Baid
 
 clc;
-clear all;
+clear;
 close all;
 
 %% Loading image
