@@ -10,7 +10,6 @@ function [x,means,sigmas,maxIters] = PerformSegmentation( x,y,means,sigmas,maxIt
 
 
 mem = zeros(size(x,1),size(x,2),length(means));
-memNew = zeros(size(x,1),size(x,2),length(means));
 
 xNew = zeros(size(x));
 posterior = zeros(size(x));
@@ -19,23 +18,26 @@ logPosteriorBefore = 0;
 logPosteriorAfter = 0;
 
 for i=1:maxIters
+    % get posterior
+    posterior = GetPosterior(x,y,means,sigmas,validMap,priorFunction);
+    logPosteriorBefore = sum(sum(log(posterior(logical(validMap)))));
+    fprintf('Iter %d: log posterior before = %f\n',i,logPosteriorBefore);
+    
     % getting memberships
     mem = GetMemberships(y,means,sigmas,x,validMap,priorFunction);
     
     % generating the new label maps
-    [posterior,xNew] = max(mem,[],3);
+    [~,xNew] = max(mem,[],3);
     xNew = xNew.*validMap;
     
-    logPosteriorBefore = sum(sum(log(posterior(logical(validMap)))));
-    fprintf('Iter %d: log posterior before = %f\n',i,logPosteriorBefore);
-    
-    % Getting posterior for the new label map
-    memNew = GetMemberships(y,means,sigmas,xNew,validMap,priorFunction);
-    [posterior,~] = max(memNew,[],3);
-    
+    % get posterior after update
+    posterior = GetPosterior(xNew,y,means,sigmas,validMap,priorFunction);
     logPosteriorAfter = sum(sum(log(posterior(logical(validMap)))));
     fprintf('Iter %d: log posterior after = %f\n',i,logPosteriorAfter);
     
+    if logPosteriorAfter<logPosteriorBefore
+        break;
+    end
     
     % Getting new params
     [means,sigmas] = GetGaussianParams(y,mem,validMap);

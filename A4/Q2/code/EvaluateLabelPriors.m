@@ -1,6 +1,6 @@
 function p = EvaluateLabelPriors( candidate_label,x,beta,validMapLeft,...
     validMapRight,validMapTop,validMapBottom,validMap)
-%EvaluateLabelPriors Summary of this function goes here
+%EvaluateLabelPriors Evaluates prior on labels
 %   Input arguments
 %   candidate_label - the candidate for the whole image (evaluated at once for
 %   speedup)
@@ -10,7 +10,12 @@ function p = EvaluateLabelPriors( candidate_label,x,beta,validMapLeft,...
 
 % Evaluating on 4-neighborhood system
 
-candidate_img = candidate_label*ones(size(x));
+
+if length(candidate_label)==1
+    candidate_img = candidate_label*ones(size(x));
+else
+    candidate_img = candidate_label;
+end
 
 topArray = ((candidate_img-circshift(x,1,1)).*validMapTop)~=0;
 bottomArray = ((candidate_img-circshift(x,-1,1)).*validMapBottom)~=0;

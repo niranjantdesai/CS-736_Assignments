@@ -22,7 +22,7 @@ validMapRight = circshift(imageMask,-1,2);
 validMapTop = circshift(imageMask,1,1);
 validMapBottom = circshift(imageMask,-1,1);
 
-beta = 5;
+beta = 1.8;
 
 priorFunction = @(candidate_label,current_labels) EvaluateLabelPriors(...
     candidate_label,current_labels,beta,validMapLeft,validMapRight,...
