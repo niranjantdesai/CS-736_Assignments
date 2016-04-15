@@ -1,0 +1,21 @@
+% Shape analysis
+
+%% Loading data
+load('../data/assignmentShapeAnalysis.mat');
+numPoints = size(pointSets,2);
+
+%% Transforming each pointset to pre-shape space
+centroids = sum(pointSets,2)/numPoints;
+temp = repmat(centroids,1,32,1);
+
+preshapePointSets = pointSets-temp;
+
+l2_norms = sum(preshapePointSets.^2,2);
+temp = repmat(centroids,1,32,1);
+
+preshapePointSets = preshapePointSets./temp;
+
+%% Checking point sets
+
+
+
