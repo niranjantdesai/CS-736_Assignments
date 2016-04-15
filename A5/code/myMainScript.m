@@ -21,7 +21,7 @@ preshapePointSets = preshapePointSets./temp;
 % ps1 = pointSets(:,:,1);
 % ps1_reshaped = preshapePointSets(:,:,1);
 % 
-% figure(1);
+% figure();
 % scatter(ps1(1,:),ps1(2,:),'r+');
 % hold on
 % scatter(ps1_reshaped(1,:),ps1_reshaped(2,:),'b+');
@@ -66,5 +66,8 @@ while(diff>diffThreshold && iter<maxIters)
     iter = iter+1;
 end
 
+figure()
+scatter(mean(1,:),mean(2,:));
+title('Mean shape');
 
 
