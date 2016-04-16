@@ -1,0 +1,512 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>myMainScript</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-04-16"><meta name="DC.source" content="myMainScript.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Loading data</a></li><li><a href="#3">Transforming each pointset to pre-shape space</a></li><li><a href="#4">Checking point sets</a></li><li><a href="#5">Plotting intial point sets</a></li><li><a href="#6">Mean shape calculation</a></li><li><a href="#7">Plotting aligned point sets</a></li><li><a href="#8">Computing principal modes of variation</a></li><li><a href="#9">Calculating shapes corresponding to modes of variations</a></li><li><a href="#10">Plotting variations</a></li></ul></div><pre class="codeinput"><span class="comment">% Shape analysis</span>
+clc
+clear;
+close <span class="string">all</span>;
+</pre><h2>Loading data<a name="2"></a></h2><pre class="codeinput">load(<span class="string">'../data/assignmentShapeAnalysis.mat'</span>);
+numPoints = size(pointSets,2);
+numSets = size(pointSets,3);
+</pre><h2>Transforming each pointset to pre-shape space<a name="3"></a></h2><pre class="codeinput">centroids = sum(pointSets,2)/numPoints;
+temp = repmat(centroids,1,32,1);
+
+preshapePointSets = pointSets-temp;
+
+l2_norms = sqrt(sum(sum(preshapePointSets.^2,2),1));
+temp = repmat(l2_norms,2,32,1);
+
+preshapePointSets = preshapePointSets./temp;
+</pre><h2>Checking point sets<a name="4"></a></h2><pre class="codeinput"><span class="comment">% ps1 = pointSets(:,:,1);</span>
+<span class="comment">% ps1_reshaped = preshapePointSets(:,:,1);</span>
+<span class="comment">%</span>
+<span class="comment">% figure();</span>
+<span class="comment">% scatter(ps1(1,:),ps1(2,:),'r+');</span>
+<span class="comment">% hold on</span>
+<span class="comment">% scatter(ps1_reshaped(1,:),ps1_reshaped(2,:),'b+');</span>
+<span class="comment">% hold off</span>
+</pre><h2>Plotting intial point sets<a name="5"></a></h2><pre class="codeinput">color_list=jet(numSets);
+
+figure(1);
+hold <span class="string">on</span>;
+title(<span class="string">'Point Sets'</span>);
+<span class="keyword">for</span> i=1:numSets
+   scatter(pointSets(1,:,i),pointSets(2,:,i),8,<span class="string">'MarkerFaceColor'</span>,color_list(i,:));
+<span class="keyword">end</span>
+hold <span class="string">off</span>
+</pre><img vspace="5" hspace="5" src="myMainScript_01.png" alt=""> <h2>Mean shape calculation<a name="6"></a></h2><p>using a random point set as the mean initialization</p><pre class="codeinput">initIndex = unidrnd(numSets,1);
+mean = preshapePointSets(:,:,initIndex);
+newMean = mean;
+
+<span class="comment">% params for iteration</span>
+diffThreshold = 1e-6;
+maxIters = 25;
+
+iter = 1;
+diff = 1e3;
+<span class="keyword">while</span>(diff&gt;diffThreshold &amp;&amp; iter&lt;maxIters)
+    mean = newMean;
+    <span class="keyword">for</span> i=1:numSets
+        R = procrustes(mean,preshapePointSets(:,:,i));
+        preshapePointSets(:,:,i) = R*preshapePointSets(:,:,i);
+    <span class="keyword">end</span>
+
+    <span class="comment">% Finding optimal mean shape within each iteration</span>
+    newMean = sum(preshapePointSets,3)/numSets;
+
+    <span class="comment">% normalizing mean to bring it into preshape space; centroid already at</span>
+    <span class="comment">% origin</span>
+    l2_norm = sqrt(sumsqr(newMean));
+    newMean = newMean./l2_norm;
+
+
+    <span class="comment">% calculate the difference between the means</span>
+    diff = sqrt(sumsqr(mean-newMean));
+    <span class="comment">% disp(diff);</span>
+    iter = iter+1;
+<span class="keyword">end</span>
+</pre><h2>Plotting aligned point sets<a name="7"></a></h2><pre class="codeinput">color_list=jet(numSets);
+
+figure(2);
+hold <span class="string">on</span>;
+<span class="comment">% scatter(mean(1,:),mean(2,:),16,'MarkerFaceColor',[0 0 0]);</span>
+plot(mean(1,:),mean(2,:),<span class="string">'-x'</span>,<span class="string">'LineWidth'</span>,4,<span class="string">'Marker'</span>,<span class="string">'*'</span>);
+<span class="keyword">for</span> i=1:numSets
+   scatter(preshapePointSets(1,:,i),preshapePointSets(2,:,i),<span class="keyword">...</span>
+       4,<span class="string">'MarkerFaceColor'</span>,color_list(i,:));
+<span class="keyword">end</span>
+title(<span class="string">'Aligned Point Sets'</span>);
+hold <span class="string">off</span>
+xl = xlim;
+yl = ylim;
+
+figure(3)
+scatter(mean(1,:),mean(2,:));
+xlim(xl);
+ylim(yl);
+title(<span class="string">'Final Mean shape'</span>);
+</pre><img vspace="5" hspace="5" src="myMainScript_02.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_03.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_04.png" alt=""> <h2>Computing principal modes of variation<a name="8"></a></h2><pre class="codeinput">cov = 0;
+<span class="comment">% mean subtracted vectorized points</span>
+<span class="keyword">for</span> i=1:numSets
+    pointSet = preshapePointSets(:,:,i) - mean;
+    cov = cov + pointSet*pointSet';
+<span class="keyword">end</span>
+cov = cov/numSets;
+
+
+<span class="comment">% Eigenvalue decomposition</span>
+[V,D] = eig(cov);
+
+eigenvals = diag(D);
+
+figure(4)
+scatter(1:length(eigenvals),eigenvals(end:-1:1));
+title(<span class="string">'Variances along each principal mode'</span>);
+</pre><img vspace="5" hspace="5" src="myMainScript_05.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_06.png" alt=""> <h2>Calculating shapes corresponding to modes of variations<a name="9"></a></h2><pre class="codeinput"><span class="comment">% Corresponding to 2*sd along 1st eigenvector</span>
+sd = sqrt(eigenvals(2));
+ps1_1(1,:) = mean(1,:) + 2*sd*V(:,2)'*mean;
+ps1_1(2,:) = mean(2,:) + 2*sd*V(:,2)'*mean;
+
+
+<span class="comment">% Corresponding to -2*sd along 1st eigenvector</span>
+sd = sqrt(eigenvals(2));
+ps2_1(1,:) = mean(1,:) - 2*sd*V(:,2)'*mean;
+ps2_1(2,:) = mean(2,:) - 2*sd*V(:,2)'*mean;
+
+
+
+<span class="comment">% Corresponding to 2*sd along 2nd eigenvector</span>
+sd = sqrt(eigenvals(1));
+ps1_2(1,:) = mean(1,:) + 2*sd*V(:,1)'*mean;
+ps1_2(2,:) = mean(2,:) + 2*sd*V(:,1)'*mean;
+
+
+
+<span class="comment">% Corresponding to -2*sd along 2nd eigenvector</span>
+sd = sqrt(eigenvals(1));
+ps2_2(1,:) = mean(1,:) - 2*sd*V(:,1)'*mean;
+ps2_2(2,:) = mean(2,:) - 2*sd*V(:,1)'*mean;
+</pre><h2>Plotting variations<a name="10"></a></h2><pre class="codeinput">figure(5)
+hold <span class="string">on</span>;
+scatter(ps1_1(1,:),ps1_1(2,:),<span class="string">'ro'</span>);
+scatter(ps2_1(1,:),ps2_1(2,:),<span class="string">'mo'</span>);
+scatter(mean(1,:),mean(2,:),<span class="string">'b*'</span>);
+xlim(xl);
+ylim(yl);
+legend(<span class="string">'+2sd'</span>,<span class="string">'-2sd'</span>,<span class="string">'mean'</span>);
+title(<span class="string">'1st mode of variation'</span>);
+hold <span class="string">off</span>;
+
+figure(6)
+hold <span class="string">on</span>;
+scatter(ps1_2(1,:),ps1_2(2,:),<span class="string">'ro'</span>);
+scatter(ps2_2(1,:),ps2_2(2,:),<span class="string">'mo'</span>);
+scatter(mean(1,:),mean(2,:),<span class="string">'b*'</span>);
+xlim(xl);
+ylim(yl);
+legend(<span class="string">'+2sd'</span>,<span class="string">'-2sd'</span>,<span class="string">'mean'</span>);
+hold <span class="string">off</span>;
+
+
+
+<span class="comment">% %% Version 2: Computing principal modes of variation</span>
+<span class="comment">% vectorizedPoints = zeros(size(pointSets,1)*size(pointSets,2),size(pointSets,3));</span>
+<span class="comment">% vectorizedMean = [mean(1,:) mean(2,:)]';</span>
+<span class="comment">%</span>
+<span class="comment">% cov = 0;</span>
+<span class="comment">% % mean subtracted vectorized points</span>
+<span class="comment">% for i=1:numSets</span>
+<span class="comment">%     vectorizedPoints(:,i) = [preshapePointSets(1,:,i) preshapePointSets(2,:,i)]' - vectorizedMean;</span>
+<span class="comment">%     cov = cov + vectorizedPoints(:,i)*vectorizedPoints(:,i)';</span>
+<span class="comment">% end</span>
+<span class="comment">% cov = cov/numSets;</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+<span class="comment">% % Eigenvalue decomposition</span>
+<span class="comment">% [V,D] = eig(cov);</span>
+<span class="comment">%</span>
+<span class="comment">% eigenvals = diag(D);</span>
+<span class="comment">%</span>
+<span class="comment">% figure()</span>
+<span class="comment">% scatter(1:length(eigenvals),eigenvals);</span>
+<span class="comment">% title('Variances along each principal mode');</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+<span class="comment">% %% V2: Calculating shapes corresponding to modes of variations</span>
+<span class="comment">%</span>
+<span class="comment">% sd = sqrt(eigenvals(64));</span>
+<span class="comment">% % Corresponding to 2*sd along 1st eigenvector</span>
+<span class="comment">% ps1_1 = vectorizedMean + V(:,64)*2*sd;</span>
+<span class="comment">%</span>
+<span class="comment">% % Corresponding to -2*sd along 1st eigenvector</span>
+<span class="comment">% ps2_1 = vectorizedMean - V(:,64)*2*sd;</span>
+<span class="comment">%</span>
+<span class="comment">% sd = sqrt(eigenvals(63));</span>
+<span class="comment">% % Corresponding to 2*sd along 1st eigenvector</span>
+<span class="comment">% ps1_2 = vectorizedMean + V(:,63)*2*sd;</span>
+<span class="comment">%</span>
+<span class="comment">% % Corresponding to -2*sd along 1st eigenvector</span>
+<span class="comment">% ps2_2 = vectorizedMean - V(:,63)*2*sd;</span>
+<span class="comment">%</span>
+<span class="comment">% %% V2: Plotting variations</span>
+<span class="comment">% figure()</span>
+<span class="comment">% hold on;</span>
+<span class="comment">% scatter(ps1_1(1:32),ps1_1(33:64),'ro');</span>
+<span class="comment">% scatter(ps2_1(1:32),ps2_1(33:64),'bo');</span>
+<span class="comment">% scatter(mean(1,:),mean(2,:),'b*');</span>
+<span class="comment">% title('1st mode of variation');</span>
+<span class="comment">% hold off;</span>
+<span class="comment">%</span>
+<span class="comment">% figure()</span>
+<span class="comment">% hold on;</span>
+<span class="comment">% scatter(ps1_2(1:32),ps1_2(33:64),'ro');</span>
+<span class="comment">% scatter(ps2_2(1:32),ps2_2(33:64),'bo');</span>
+<span class="comment">% scatter(mean(1,:),mean(2,:),'b*');</span>
+<span class="comment">% title('2nd mode of variation');</span>
+<span class="comment">% hold off;</span>
+</pre><img vspace="5" hspace="5" src="myMainScript_07.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_08.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% Shape analysis
+clc
+clear;
+close all;
+
+%% Loading data
+load('../data/assignmentShapeAnalysis.mat');
+numPoints = size(pointSets,2);
+numSets = size(pointSets,3);
+
+%% Transforming each pointset to pre-shape space
+centroids = sum(pointSets,2)/numPoints;
+temp = repmat(centroids,1,32,1);
+
+preshapePointSets = pointSets-temp;
+
+l2_norms = sqrt(sum(sum(preshapePointSets.^2,2),1));
+temp = repmat(l2_norms,2,32,1);
+
+preshapePointSets = preshapePointSets./temp;
+
+%% Checking point sets
+
+% ps1 = pointSets(:,:,1);
+% ps1_reshaped = preshapePointSets(:,:,1);
+% 
+% figure();
+% scatter(ps1(1,:),ps1(2,:),'r+');
+% hold on
+% scatter(ps1_reshaped(1,:),ps1_reshaped(2,:),'b+');
+% hold off
+
+%% Plotting intial point sets
+color_list=jet(numSets);
+
+figure(1);
+hold on;
+title('Point Sets');
+for i=1:numSets
+   scatter(pointSets(1,:,i),pointSets(2,:,i),8,'MarkerFaceColor',color_list(i,:)); 
+end
+hold off
+
+%% Mean shape calculation
+% using a random point set as the mean initialization
+initIndex = unidrnd(numSets,1);
+mean = preshapePointSets(:,:,initIndex);
+newMean = mean;
+
+% params for iteration 
+diffThreshold = 1e-6;
+maxIters = 25;
+
+iter = 1;
+diff = 1e3;
+while(diff>diffThreshold && iter<maxIters)
+    mean = newMean;
+    for i=1:numSets
+        R = procrustes(mean,preshapePointSets(:,:,i));
+        preshapePointSets(:,:,i) = R*preshapePointSets(:,:,i);
+    end
+    
+    % Finding optimal mean shape within each iteration
+    newMean = sum(preshapePointSets,3)/numSets;
+    
+    % normalizing mean to bring it into preshape space; centroid already at
+    % origin
+    l2_norm = sqrt(sumsqr(newMean));
+    newMean = newMean./l2_norm;
+    
+    
+    % calculate the difference between the means
+    diff = sqrt(sumsqr(mean-newMean));
+    % disp(diff);
+    iter = iter+1;
+end
+
+
+
+%% Plotting aligned point sets
+
+color_list=jet(numSets);
+
+figure(2);
+hold on;
+% scatter(mean(1,:),mean(2,:),16,'MarkerFaceColor',[0 0 0]);
+plot(mean(1,:),mean(2,:),'-x','LineWidth',4,'Marker','*');
+for i=1:numSets
+   scatter(preshapePointSets(1,:,i),preshapePointSets(2,:,i),...
+       4,'MarkerFaceColor',color_list(i,:)); 
+end
+title('Aligned Point Sets');
+hold off
+xl = xlim;
+yl = ylim;
+
+figure(3)
+scatter(mean(1,:),mean(2,:));
+xlim(xl);
+ylim(yl);
+title('Final Mean shape');
+
+%% Computing principal modes of variation
+
+cov = 0;
+% mean subtracted vectorized points
+for i=1:numSets
+    pointSet = preshapePointSets(:,:,i) - mean;
+    cov = cov + pointSet*pointSet';
+end
+cov = cov/numSets;
+
+
+% Eigenvalue decomposition
+[V,D] = eig(cov);
+
+eigenvals = diag(D);
+
+figure(4)
+scatter(1:length(eigenvals),eigenvals(end:-1:1));
+title('Variances along each principal mode');
+
+
+%% Calculating shapes corresponding to modes of variations
+
+% Corresponding to 2*sd along 1st eigenvector
+sd = sqrt(eigenvals(2));
+ps1_1(1,:) = mean(1,:) + 2*sd*V(:,2)'*mean;
+ps1_1(2,:) = mean(2,:) + 2*sd*V(:,2)'*mean;
+
+
+% Corresponding to -2*sd along 1st eigenvector
+sd = sqrt(eigenvals(2));
+ps2_1(1,:) = mean(1,:) - 2*sd*V(:,2)'*mean;
+ps2_1(2,:) = mean(2,:) - 2*sd*V(:,2)'*mean;
+
+
+
+% Corresponding to 2*sd along 2nd eigenvector
+sd = sqrt(eigenvals(1));
+ps1_2(1,:) = mean(1,:) + 2*sd*V(:,1)'*mean;
+ps1_2(2,:) = mean(2,:) + 2*sd*V(:,1)'*mean;
+
+
+
+% Corresponding to -2*sd along 2nd eigenvector
+sd = sqrt(eigenvals(1));
+ps2_2(1,:) = mean(1,:) - 2*sd*V(:,1)'*mean;
+ps2_2(2,:) = mean(2,:) - 2*sd*V(:,1)'*mean;
+
+%% Plotting variations
+figure(5)
+hold on;
+scatter(ps1_1(1,:),ps1_1(2,:),'ro');
+scatter(ps2_1(1,:),ps2_1(2,:),'mo');
+scatter(mean(1,:),mean(2,:),'b*');
+xlim(xl);
+ylim(yl);
+legend('+2sd','-2sd','mean');
+title('1st mode of variation');
+hold off;
+
+figure(6)
+hold on;
+scatter(ps1_2(1,:),ps1_2(2,:),'ro');
+scatter(ps2_2(1,:),ps2_2(2,:),'mo');
+scatter(mean(1,:),mean(2,:),'b*');
+xlim(xl);
+ylim(yl);
+legend('+2sd','-2sd','mean');
+hold off;
+
+
+
+% %% Version 2: Computing principal modes of variation
+% vectorizedPoints = zeros(size(pointSets,1)*size(pointSets,2),size(pointSets,3));
+% vectorizedMean = [mean(1,:) mean(2,:)]';
+% 
+% cov = 0;
+% % mean subtracted vectorized points
+% for i=1:numSets
+%     vectorizedPoints(:,i) = [preshapePointSets(1,:,i) preshapePointSets(2,:,i)]' - vectorizedMean;
+%     cov = cov + vectorizedPoints(:,i)*vectorizedPoints(:,i)';
+% end
+% cov = cov/numSets;
+% 
+% 
+% 
+% % Eigenvalue decomposition
+% [V,D] = eig(cov);
+% 
+% eigenvals = diag(D);
+% 
+% figure()
+% scatter(1:length(eigenvals),eigenvals);
+% title('Variances along each principal mode');
+% 
+% 
+% %% V2: Calculating shapes corresponding to modes of variations
+% 
+% sd = sqrt(eigenvals(64));
+% % Corresponding to 2*sd along 1st eigenvector
+% ps1_1 = vectorizedMean + V(:,64)*2*sd;
+% 
+% % Corresponding to -2*sd along 1st eigenvector
+% ps2_1 = vectorizedMean - V(:,64)*2*sd;
+% 
+% sd = sqrt(eigenvals(63));
+% % Corresponding to 2*sd along 1st eigenvector
+% ps1_2 = vectorizedMean + V(:,63)*2*sd;
+% 
+% % Corresponding to -2*sd along 1st eigenvector
+% ps2_2 = vectorizedMean - V(:,63)*2*sd;
+% 
+% %% V2: Plotting variations
+% figure()
+% hold on;
+% scatter(ps1_1(1:32),ps1_1(33:64),'ro');
+% scatter(ps2_1(1:32),ps2_1(33:64),'bo');
+% scatter(mean(1,:),mean(2,:),'b*');
+% title('1st mode of variation');
+% hold off;
+% 
+% figure()
+% hold on;
+% scatter(ps1_2(1:32),ps1_2(33:64),'ro');
+% scatter(ps2_2(1:32),ps2_2(33:64),'bo');
+% scatter(mean(1,:),mean(2,:),'b*');
+% title('2nd mode of variation');
+% hold off;
+
+
+
+
+
+
+##### SOURCE END #####
+--></body></html>

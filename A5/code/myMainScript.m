@@ -1,7 +1,7 @@
 % Shape analysis
 clc
-clear all;
-close;
+clear;
+close all;
 
 %% Loading data
 load('../data/assignmentShapeAnalysis.mat');
@@ -33,7 +33,7 @@ preshapePointSets = preshapePointSets./temp;
 %% Plotting intial point sets
 color_list=jet(numSets);
 
-figure();
+figure(1);
 hold on;
 title('Point Sets');
 for i=1:numSets
@@ -75,16 +75,13 @@ while(diff>diffThreshold && iter<maxIters)
     iter = iter+1;
 end
 
-figure()
-scatter(mean(1,:),mean(2,:));
-title('Final Mean shape');
 
 
 %% Plotting aligned point sets
 
 color_list=jet(numSets);
 
-figure();
+figure(2);
 hold on;
 % scatter(mean(1,:),mean(2,:),16,'MarkerFaceColor',[0 0 0]);
 plot(mean(1,:),mean(2,:),'-x','LineWidth',4,'Marker','*');
@@ -94,15 +91,22 @@ for i=1:numSets
 end
 title('Aligned Point Sets');
 hold off
+xl = xlim;
+yl = ylim;
+
+figure(3)
+scatter(mean(1,:),mean(2,:));
+xlim(xl);
+ylim(yl);
+title('Final Mean shape');
 
 %% Computing principal modes of variation
-vectorizedPoints = zeros(size(pointSets,1)*size(pointSets,2),size(pointSets,3));
 
 cov = 0;
 % mean subtracted vectorized points
 for i=1:numSets
-    vectorizedPoints(:,i) = [preshapePointSets(1,:,i) preshapePointSets(2,:,i)]' - vectorizedMean;
-    cov = cov + vectorizedPoints(:,i)*vectorizedPoints(:,i)';
+    pointSet = preshapePointSets(:,:,i) - mean;
+    cov = cov + pointSet*pointSet';
 end
 cov = cov/numSets;
 
@@ -112,9 +116,118 @@ cov = cov/numSets;
 
 eigenvals = diag(D);
 
-figure()
-scatter(1:length(eigenvals),eigenvals);
+figure(4)
+scatter(1:length(eigenvals),eigenvals(end:-1:1));
 title('Variances along each principal mode');
+
+
+%% Calculating shapes corresponding to modes of variations
+
+% Corresponding to 2*sd along 1st eigenvector
+sd = sqrt(eigenvals(2));
+ps1_1(1,:) = mean(1,:) + 2*sd*V(:,2)'*mean;
+ps1_1(2,:) = mean(2,:) + 2*sd*V(:,2)'*mean;
+
+
+% Corresponding to -2*sd along 1st eigenvector
+sd = sqrt(eigenvals(2));
+ps2_1(1,:) = mean(1,:) - 2*sd*V(:,2)'*mean;
+ps2_1(2,:) = mean(2,:) - 2*sd*V(:,2)'*mean;
+
+
+
+% Corresponding to 2*sd along 2nd eigenvector
+sd = sqrt(eigenvals(1));
+ps1_2(1,:) = mean(1,:) + 2*sd*V(:,1)'*mean;
+ps1_2(2,:) = mean(2,:) + 2*sd*V(:,1)'*mean;
+
+
+
+% Corresponding to -2*sd along 2nd eigenvector
+sd = sqrt(eigenvals(1));
+ps2_2(1,:) = mean(1,:) - 2*sd*V(:,1)'*mean;
+ps2_2(2,:) = mean(2,:) - 2*sd*V(:,1)'*mean;
+
+%% Plotting variations
+figure(5)
+hold on;
+scatter(ps1_1(1,:),ps1_1(2,:),'ro');
+scatter(ps2_1(1,:),ps2_1(2,:),'mo');
+scatter(mean(1,:),mean(2,:),'b*');
+xlim(xl);
+ylim(yl);
+legend('+2sd','-2sd','mean');
+title('1st mode of variation');
+hold off;
+
+figure(6)
+hold on;
+scatter(ps1_2(1,:),ps1_2(2,:),'ro');
+scatter(ps2_2(1,:),ps2_2(2,:),'mo');
+scatter(mean(1,:),mean(2,:),'b*');
+xlim(xl);
+ylim(yl);
+legend('+2sd','-2sd','mean');
+hold off;
+
+
+
+% %% Version 2: Computing principal modes of variation
+% vectorizedPoints = zeros(size(pointSets,1)*size(pointSets,2),size(pointSets,3));
+% vectorizedMean = [mean(1,:) mean(2,:)]';
+% 
+% cov = 0;
+% % mean subtracted vectorized points
+% for i=1:numSets
+%     vectorizedPoints(:,i) = [preshapePointSets(1,:,i) preshapePointSets(2,:,i)]' - vectorizedMean;
+%     cov = cov + vectorizedPoints(:,i)*vectorizedPoints(:,i)';
+% end
+% cov = cov/numSets;
+% 
+% 
+% 
+% % Eigenvalue decomposition
+% [V,D] = eig(cov);
+% 
+% eigenvals = diag(D);
+% 
+% figure()
+% scatter(1:length(eigenvals),eigenvals);
+% title('Variances along each principal mode');
+% 
+% 
+% %% V2: Calculating shapes corresponding to modes of variations
+% 
+% sd = sqrt(eigenvals(64));
+% % Corresponding to 2*sd along 1st eigenvector
+% ps1_1 = vectorizedMean + V(:,64)*2*sd;
+% 
+% % Corresponding to -2*sd along 1st eigenvector
+% ps2_1 = vectorizedMean - V(:,64)*2*sd;
+% 
+% sd = sqrt(eigenvals(63));
+% % Corresponding to 2*sd along 1st eigenvector
+% ps1_2 = vectorizedMean + V(:,63)*2*sd;
+% 
+% % Corresponding to -2*sd along 1st eigenvector
+% ps2_2 = vectorizedMean - V(:,63)*2*sd;
+% 
+% %% V2: Plotting variations
+% figure()
+% hold on;
+% scatter(ps1_1(1:32),ps1_1(33:64),'ro');
+% scatter(ps2_1(1:32),ps2_1(33:64),'bo');
+% scatter(mean(1,:),mean(2,:),'b*');
+% title('1st mode of variation');
+% hold off;
+% 
+% figure()
+% hold on;
+% scatter(ps1_2(1:32),ps1_2(33:64),'ro');
+% scatter(ps2_2(1:32),ps2_2(33:64),'bo');
+% scatter(mean(1,:),mean(2,:),'b*');
+% title('2nd mode of variation');
+% hold off;
 
 
 
